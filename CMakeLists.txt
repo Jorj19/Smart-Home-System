@@ -50,6 +50,12 @@ include(cmake/CopyHelper.cmake)
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
+        Senzor.h
+        Senzor.cpp
+        Camera.cpp
+        Camera.h
+        SistemHomey.cpp
+        SistemHomey.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
