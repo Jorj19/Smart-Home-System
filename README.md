@@ -1,6 +1,6 @@
 # 👋 Salut! Eu sunt **The Homey** – Asistentul Tău Personal
 
-The Homey este un sistem inteligent conceput cu misiunea de a transforma locuința într-un ecosistem viu. Sistemul se bazează pe capacitatea sa de a învăța din obiceiurile utilizatorului și de a acționa proactiv și inteligent, adesea înainte ca nevoia sau problema să devină conștientă.
+Sunt un sistem inteligent conceput cu misiunea de a transforma locuința într-un ecosistem viu. Sistemul se bazează pe capacitatea sa de a învăța din obiceiurile utilizatorului și de a acționa proactiv și inteligent, adesea înainte ca nevoia sau problema să devină conștientă.
 
 ---
 
