@@ -18,17 +18,17 @@ int main() {
     Senzor co2Dormitor("CO2", 650.0, "ppm");
     Senzor tempBucatarie("Temperatura", 25.0, "C"); // Valoare ridicată
 
-    // --- 2. Creare Camera și testare 'adaugaSenzor' (Funcție netrivială) ---
+    // --- 2. Creare Camera ---
     std::cout << "\n--- Creare Camera 'Living' si adaugare senzori... ---\n";
     Camera living("Living");
     living.adaugSenzor(tempLiving);
     living.adaugSenzor(co2Living);
     living.adaugSenzor(luminaLiving);
 
-    // --- 3. Testare 'operator<<' pentru Camera (Cerința 4) ---
+    // --- 3. Testare 'operator<<' pentru Camera ---
     std::cout << living;
 
-    // --- 4. Testare funcții netriviale 'Camera' (Cerința 6) ---
+
     std::cout << "\n--- Testare functii netriviale 'Camera' ---\n";
     double medieTemp = living.calculeazaMedieSenzori("Temperatura");
     std::cout << "Media temperaturii in Living: " << medieTemp << " C\n";
@@ -36,7 +36,7 @@ int main() {
     living.afiseazaSenzoriPestePrag(400.0, "CO2");
     living.afiseazaSenzoriPestePrag(500.0, "Lumina");
 
-    // --- 5. Testare 'Regula celor Trei' pentru Camera (Cerința 3) ---
+
     std::cout << "\n--- Testare Constructor de Copiere (Camera) ---\n";
 
     std::cout << "CHECKPOINT 1\n";
@@ -52,7 +52,7 @@ int main() {
     birou = living;
     std::cout << "--- BIROU (copiat din Living) ---\n" << birou;
 
-    // --- 6. Creare SistemHomey și adăugare camere ---
+    // --- 6. Creare SistemHomey si adaugare camere ---
     std::cout << "\n--- Creare Sistem 'The Homey' si adaugare camere... ---\n";
     SistemHomey casa("The Homey");
     casa.adaugCamere(living);
@@ -64,18 +64,14 @@ int main() {
 
     casa.adaugCamere(dormitor);
 
-    // --- 7. Testare 'operator<<' pentru SistemHomey (Cerința 4) ---
+
     std::cout << "\n--- Afisare Sistem Homey Complet ---\n";
     std::cout << casa;
 
-    // --- 8. Testare funcții netriviale 'SistemHomey' (Cerința 6) ---
+
     std::cout << "\n--- Testare functii netriviale 'SistemHomey' ---\n";
 
-    // Test 1: Raport complex (A FOST ELIMINAT)
-    // std::string raport = casa.genereazaRaportSistem();
-    // std::cout << raport;
 
-    // Test 2: Căutare complexă
     casa.gasesteCameraSenzorCritic("Temperatura", 24.0);
 
 
