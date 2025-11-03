@@ -20,6 +20,7 @@ std::string Sensor::getUnit() const {
     return this->measurementUnit;
 }
 
+// cppcheck-suppress unusedFunction
 void Sensor::updateValue(double newValue) {
     this->currentValue = newValue;
 }
