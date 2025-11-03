@@ -12,10 +12,12 @@ std::string Sensor::getType() const {
     return this->sensorType;
 }
 
+// cppcheck-suppress unusedFunction
 double Sensor::getValue() const {
     return this->currentValue;
 }
 
+// cppcheck-suppress unusedFunction
 std::string Sensor::getUnit() const {
     return this->measurementUnit;
 }
