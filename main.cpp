@@ -17,7 +17,7 @@ int main() {
     Sensor bedroomCO2("CO2", 1100.0, "ppm"); // val mare
     Sensor kitchenTemp("Temperatura", 40.0, "C"); // val mare
 
-    livingTemp.updateValue(22.6);
+    livingTemp.updateValue(22.8);
 
     //Creare Camera
     std::cout << "\nCreating 'Living Room' and adding sensors...\n";
