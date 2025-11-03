@@ -1,26 +1,26 @@
 #include "Room.h"
 #include <iostream>
+#include <utility>
 
-Room::Room() : roomName("N/A"), sensorCount(0) {
+Room::Room() : roomName("N/A") {
 
 }
 
-Room::Room(const std::string& name) : roomName(name), sensorCount(0) {
+Room::Room(std::string name) : roomName(std::move(name)) {
 
 }
 
 void Room::addSensor(const Sensor& s) {
     this->sensorList.push_back(s);
-    this->sensorCount++;
 }
 
 double Room::calculateSensorAverage(const std::string& sensorType) const {
     double sum = 0.0;
     int count = 0;
 
-    for (int i = 0; i < this->sensorCount; i++) {
-        if (this->sensorList[i].getType() == sensorType) {
-            sum += this->sensorList[i].getValue();
+    for (const Sensor& sensor : this->sensorList) {
+        if (sensor.getType() == sensorType) {
+            sum += sensor.getValue();
             count++;
         }
     }
@@ -35,9 +35,9 @@ void Room::displaySensorsOverThreshold(double threshold, const std::string& sens
     std::cout << "Sensors [Type: " << sensorType << "] over threshold [" << threshold << "] in " << this->roomName << ":\n";
     bool found = false;
 
-    for (int i = 0; i < this->sensorCount; i++) {
-        if (this->sensorList[i].getType() == sensorType && this->sensorList[i].getValue() > threshold) {
-            std::cout << " -> " << this->sensorList[i] << "\n";
+    for (const Sensor& sensor : this->sensorList) {
+        if (sensor.getType() == sensorType && sensor.getValue() > threshold) {
+            std::cout << " -> " << sensor << "\n";
             found = true;
         }
     }
@@ -55,18 +55,14 @@ const std::vector<Sensor>& Room::getSensorList() const {
     return this->sensorList;
 }
 
-int Room::getSensorCount() const {
-    return this->sensorCount;
-}
-
 std::ostream& operator<<(std::ostream& os, const Room& r) {
-    os << " - Room: " << r.roomName << " (" << r.sensorCount << " sensors)\n";
+    os << " - Room: " << r.roomName << " (" << r.sensorList.size() << " sensors)\n";
 
-    if (r.sensorCount == 0) {
+    if (r.sensorList.empty()) {
         os << " (Room is empty)\n";
     } else {
-        for (int i = 0; i < r.sensorCount; i++) {
-            os << "  " << i + 1 << ". " << r.sensorList[i] << "\n";
+        for (const Sensor& sensor : r.sensorList) {
+            os  << " -> " << sensor << "\n";
         }
     }
     return os;

@@ -10,18 +10,16 @@ class HomeSystem {
 private:
     std::string systemName;
     std::vector<Room> roomList;
-    int roomCount;
 
 public:
-    HomeSystem(const std::string& name);
+    explicit HomeSystem(std::string name);
 
     void addRoom(const Room& r);
 
     void findRoomsWithCriticalSensors(const std::string& sensorType, double threshold) const;
 
-    const std::vector<Room>& getRoomList() const;
-    int getRoomCount() const;
-    std::string getSystemName() const;
+    [[nodiscard]] const std::vector<Room>& getRoomList() const;
+    [[nodiscard]] std::string getSystemName() const;
 
     friend std::ostream& operator<<(std::ostream& os, const HomeSystem& hs);
 };

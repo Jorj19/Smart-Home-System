@@ -10,24 +10,21 @@ class Room {
 private:
     std::string roomName;
     std::vector<Sensor> sensorList;
-    int sensorCount;
 
 public:
-    Room(const std::string& name);
+    explicit Room(std::string name);
 
     Room();
 
     void addSensor(const Sensor& s);
 
-    double calculateSensorAverage(const std::string& sensorType) const;
+    [[nodiscard]] double calculateSensorAverage(const std::string& sensorType) const;
 
     void displaySensorsOverThreshold(double threshold, const std::string& sensorType) const;
 
-    std::string getName() const;
+    [[nodiscard]] std::string getName() const;
 
-    const std::vector<Sensor>& getSensorList() const;
-
-    int getSensorCount() const;
+    [[nodiscard]] const std::vector<Sensor>& getSensorList() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Room& r);
 };

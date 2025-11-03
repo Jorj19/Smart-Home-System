@@ -15,8 +15,8 @@ private:
 public:
     Alert(const std::string& msg, const std::string& room, int prio);
 
-    int getPriority() const;
-    std::string getMessage() const;
+    [[nodiscard]] int getPriority() const;
+    [[nodiscard]] std::string getMessage() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Alert& a);
 };

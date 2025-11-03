@@ -1,6 +1,7 @@
 #include "Sensor.h"
+#include <utility>
 
-Sensor::Sensor(const std::string& type, double value, const std::string& unit) : sensorType(type), currentValue(value), measurementUnit(unit) {
+Sensor::Sensor(std::string type, double value, std::string unit) : sensorType(std::move(type)), currentValue(value), measurementUnit(std::move(unit)) {
 }
 
 Sensor::Sensor() : sensorType("Unknown"), currentValue(0.0), measurementUnit("N/A") {

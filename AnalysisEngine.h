@@ -16,13 +16,13 @@ private:
     const HomeSystem& system;
 
 public:
-    AnalysisEngine(const HomeSystem& sys);
+    explicit AnalysisEngine(const HomeSystem& sys);
 
-    std::vector<Alert> generateAlerts() const;
+    [[nodiscard]] std::vector<Alert> generateAlerts() const;
 
-    std::string generateStatusReport() const;
+    [[nodiscard]] std::string generateStatusReport() const;
 
-    int calculateHealthScore() const;
+    [[nodiscard]] int calculateHealthScore() const;
 };
 
 

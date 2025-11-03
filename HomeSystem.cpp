@@ -1,27 +1,23 @@
 #include "HomeSystem.h"
+#include <utility>
 
-HomeSystem::HomeSystem(const std::string& name) : systemName(name), roomCount(0) {
+HomeSystem::HomeSystem(std::string name) : systemName(std::move(name)) {
 
 }
 
 void HomeSystem::addRoom(const Room& r) {
     this->roomList.push_back(r);
-    this->roomCount++;
 }
 
 void HomeSystem::findRoomsWithCriticalSensors(const std::string& sensorType, double threshold) const {
     std::cout << "\n Searching for Critical Sensors (" << sensorType << " > " << threshold << ") in system " << this->systemName << "\n";
-    for (int i = 0; i < this->roomCount; i++) {
-        this->roomList[i].displaySensorsOverThreshold(threshold, sensorType);
+    for (const Room& room : this->roomList) {
+        room.displaySensorsOverThreshold(threshold, sensorType);
     }
 }
 
 const std::vector<Room>& HomeSystem::getRoomList() const {
     return this->roomList;
-}
-
-int HomeSystem::getRoomCount() const {
-    return this->roomCount;
 }
 
 std::string HomeSystem::getSystemName() const {
@@ -30,14 +26,14 @@ std::string HomeSystem::getSystemName() const {
 
 std::ostream& operator<<(std::ostream& os, const HomeSystem& hs) {
     os << "#\n";
-    os << "Home System: " << hs.systemName << " (Total " << hs.roomCount << " rooms)\n";
+    os << "Home System: " << hs.systemName << " (Total " << hs.roomList.size() << " rooms)\n";
     os << "#\n";
 
-    if (hs.roomCount == 0) {
+    if (hs.roomList.empty()) {
         os << " (System has no rooms)\n";
     } else {
-        for (int i = 0; i < hs.roomCount; i++) {
-            os << hs.roomList[i] << "\n";
+        for (const Room& room : hs.roomList) {
+            os << room << "\n";
         }
     }
     return os;

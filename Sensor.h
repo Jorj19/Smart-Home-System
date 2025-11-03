@@ -11,13 +11,13 @@ private:
     std::string measurementUnit;
 
 public:
-    Sensor(const std::string& type, double value, const std::string& unit);
+    explicit Sensor(std::string type, double value, std::string unit);
 
     Sensor();
 
-    std::string getType() const;
-    double getValue() const;
-    std::string getUnit() const;
+    [[nodiscard]] std::string getType() const;
+    [[nodiscard]] double getValue() const;
+    [[nodiscard]] std::string getUnit() const;
 
     void updateValue(double newValue);
 
