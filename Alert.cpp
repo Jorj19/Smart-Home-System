@@ -5,10 +5,12 @@ Alert::Alert(const std::string& msg, const std::string& room, int prio) : messag
 
 }
 
+// cppcheck-suppress unusedFunction
 int Alert::getPriority() const {
     return this->priority;
 }
 
+// cppcheck-suppress unusedFunction
 std::string Alert::getMessage() const {
     return this->message;
 }

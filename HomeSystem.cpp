@@ -20,6 +20,7 @@ const std::vector<Room>& HomeSystem::getRoomList() const {
     return this->roomList;
 }
 
+// cppcheck-suppress unusedFunction
 std::string HomeSystem::getSystemName() const {
     return this->systemName;
 }
