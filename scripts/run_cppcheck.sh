@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-cppcheck --enable=all \
+cppcheck --std=c++17 --enable=all \
     --inline-suppr \
     --project="${BUILD_DIR:-build}"/compile_commands.json \
     -i"${BUILD_DIR:-build}" --suppress="*:${BUILD_DIR:-build}/*" \
