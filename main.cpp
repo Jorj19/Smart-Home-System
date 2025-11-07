@@ -70,7 +70,7 @@ void runInteractiveSystem() {
     userEngine.addRule(Rule("Window Open", "ContactFereastra", "==", 1.0, "Window open. Check security/efficiency.", 3));
 
     while(true) {
-        std::cout << "\n--- System: " << systemName << " (Interactive Mode) ---\n";
+        std::cout << "\n--- System: " << systemName << " ---\n";
         std::cout << "1. Add Room\n";
         std::cout << "2. Add Sensor (to a Room)\n";
         std::cout << "3. Run Analysis\n";
@@ -228,7 +228,7 @@ void runDemoSystem() {
 
 
 
-    std::cout << "\n--- Test Status Report (cu Indici Complecși) ---\n";
+    std::cout << "\n--- Test Status Report ---\n";
     std::string report = homeBrain.generateStatusReport(); // Acum afișează indicii
     std::cout << report;
 
@@ -236,7 +236,7 @@ void runDemoSystem() {
     int score = homeBrain.calculateHealthScore();
     std::cout << "The health score of the home is: " << score << "/100\n";
 
-    std::cout << "\n--- Test Alert Generation (Rule-Based) ---\n";
+    std::cout << "\n--- Test Alert Generation ---\n";
     std::vector<Alert> currentAlerts = homeBrain.generateAlerts();
 
     if (currentAlerts.empty()) {
@@ -248,6 +248,8 @@ void runDemoSystem() {
         }
     }
 }
+
+
 
 void clearInputBuffer() {
     if (std::cin.fail()) {
