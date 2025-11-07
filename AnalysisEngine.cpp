@@ -11,28 +11,27 @@ AnalysisEngine::AnalysisEngine(const HomeSystem& sys) : system(sys) {
 
 }
 
+void AnalysisEngine::addRule(const Rule& rule) {
+    this->ruleList.push_back(rule);
+}
+
+const std::vector<Rule>& AnalysisEngine::getRuleList() const {
+    return this->ruleList;
+}
+
+
 std::vector<Alert> AnalysisEngine::generateAlerts() const {
     std::vector<Alert> foundAlerts;
 
     for (const Room& room : this->system.getRoomList()) {
 
         for (const Sensor& sensor : room.getSensorList()) {
-            // Rule 1: Critical Temperature
-            if (sensor.getType() == "Temperatura" && sensor.getValue() > 35.0) {
-                foundAlerts.emplace_back("Fire Hazard! Critical Temperature!", room.getName(), 1);
-            }
 
-            // Rule 2: Poor Air Quality
-            if (sensor.getType() == "CO2" && sensor.getValue() > 1000.0) {
-                foundAlerts.emplace_back("Poor Air Quality. Ventilate.", room.getName(), 2);
+            for (const Rule& rule : this->ruleList) {
+                if (rule.isTriggeredBy(sensor)) {
+                    foundAlerts.emplace_back(rule.getMessage(), room.getName(), rule.getPriority());
+                }
             }
-
-            // Rule 3: Light is om
-            if (sensor.getType() == "Lumina" && sensor.getValue() > 100.0) {
-                foundAlerts.emplace_back("Light is on. Possible waste.", room.getName(), 3);
-            }
-
-            // de adaugat mai multe
         }
     }
     return foundAlerts;

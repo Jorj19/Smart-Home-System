@@ -71,6 +71,22 @@ int main() {
 
     AnalysisEngine homeBrain(home);
 
+    Rule tempCritica("Temp Critica", "Temperatura", ">", 35.0,
+                         "Fire Hazard! Critical Temperature!", 1);
+
+    Rule co2Slab("CO2 Slab", "CO2", ">", 1000.0,
+                 "Poor Air Quality. Ventilate.", 2);
+
+    Rule luminaInutila("Lumina Inutila", "Lumina", ">", 100.0,
+                       "Light is on. Possible waste.", 3);
+
+    homeBrain.addRule(tempCritica);
+    homeBrain.addRule(co2Slab);
+    homeBrain.addRule(luminaInutila);
+
+    std::cout << "Engine configured with " << homeBrain.getRuleList().size() << " rules.\n";
+
+
     // Test 1: Generare Raport Sumar
     std::cout << "\n Test Status Report \n";
     std::string report = homeBrain.generateStatusReport();

@@ -60,6 +60,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         Alert.h
         AnalysisEngine.cpp
         AnalysisEngine.h
+        Rule.cpp
+        Rule.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

@@ -7,6 +7,7 @@
 
 #include "HomeSystem.h"
 #include "Alert.h"
+#include "Rule.h"
 
 #include <vector>
 #include <string>
@@ -14,9 +15,14 @@
 class AnalysisEngine {
 private:
     const HomeSystem& system;
+    std::vector<Rule> ruleList;
 
 public:
     explicit AnalysisEngine(const HomeSystem& sys);
+
+    void addRule(const Rule& rule);
+
+    [[nodiscard]] const std::vector<Rule>& getRuleList() const;
 
     [[nodiscard]] std::vector<Alert> generateAlerts() const;
 
