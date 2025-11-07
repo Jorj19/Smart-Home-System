@@ -18,6 +18,7 @@ Room* HomeSystem::findRoomByName(const std::string& name) {
     return nullptr;
 }
 
+// cppcheck-suppress constMethod
 void HomeSystem::findRoomsWithCriticalSensors(const std::string& sensorType, double threshold) const {
     std::cout << "\n Searching for Critical Sensors (" << sensorType << " > " << threshold << ") in system " << this->systemName << "\n";
     for (const Room& room : this->roomList) {
