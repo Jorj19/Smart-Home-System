@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-cppcheck --std=c++17 --enable=all \
+cppcheck --std=c++17 --enable=all --force --error-exitcode=1 src include
     --inline-suppr \
     --project="${BUILD_DIR:-build}"/compile_commands.json \
     -i"${BUILD_DIR:-build}" --suppress="*:${BUILD_DIR:-build}/*" \
