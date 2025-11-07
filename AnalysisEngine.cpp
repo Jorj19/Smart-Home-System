@@ -94,7 +94,7 @@ std::vector<Alert> AnalysisEngine::generateAlerts() const {
 
             for (const Rule& rule : this->ruleList) {
                 if (rule.isTriggeredBy(sensor)) {
-                    foundAlerts.emplace_back(rule.getMessage(), room.getName(), rule.getPriority());
+                    foundAlerts.push_back(Alert(rule.getMessage(), room.getName(), rule.getPriority()));
                 }
             }
         }
