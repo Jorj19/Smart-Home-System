@@ -2,7 +2,7 @@
 #include "Room.h"
 #include <iostream>
 #include <utility>
-
+#include <cstddef>
 Room::Room() : roomName("N/A") {
 
 }
@@ -17,19 +17,19 @@ void Room::addSensor(const Sensor& s) {
 
 double Room::calculateSensorAverage(const std::string& sensorType) const {
     double sum = 0.0;
-    int count = 0;
+    std::size_t count = 0u;
 
     for (const Sensor& sensor : this->sensorList) {
         if (sensor.getType() == sensorType) {
             sum += sensor.getValue();
-            count++;
+            ++count;
         }
     }
 
-    if (count == 0) {
+    if (count == 0u) {
         return 0.0;
     }
-    return sum / count;
+    return sum / static_cast<double>(count);
 }
 
 void Room::displaySensorsOverThreshold(double threshold, const std::string& sensorType) const {
