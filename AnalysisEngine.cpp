@@ -16,6 +16,7 @@ void AnalysisEngine::addRule(const Rule& rule) {
     this->ruleList.push_back(rule);
 }
 
+// cppcheck-suppress unusedFunction
 const std::vector<Rule>& AnalysisEngine::getRuleList() const {
     return this->ruleList;
 }

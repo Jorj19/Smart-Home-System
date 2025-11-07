@@ -15,6 +15,7 @@ void Room::addSensor(const Sensor& s) {
     this->sensorList.push_back(s);
 }
 
+// cppcheck-suppress unusedFunction
 double Room::calculateSensorAverage(const std::string& sensorType) const {
     double sum = 0.0;
     std::size_t count = 0u;
