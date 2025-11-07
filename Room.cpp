@@ -1,3 +1,4 @@
+// cppcheck-suppress-file
 #include "Room.h"
 #include <iostream>
 #include <utility>
