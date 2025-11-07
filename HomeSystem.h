@@ -16,6 +16,8 @@ public:
 
     void addRoom(const Room& r);
 
+    Room* findRoomByName(const std::string& name);
+
     void findRoomsWithCriticalSensors(const std::string& sensorType, double threshold) const;
 
     [[nodiscard]] const std::vector<Room>& getRoomList() const;

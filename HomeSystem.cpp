@@ -9,6 +9,15 @@ void HomeSystem::addRoom(const Room& r) {
     this->roomList.push_back(r);
 }
 
+Room* HomeSystem::findRoomByName(const std::string& name) {
+    for (Room& room : this->roomList) {
+        if (room.getName() == name) {
+            return &room;
+        }
+    }
+    return nullptr;
+}
+
 void HomeSystem::findRoomsWithCriticalSensors(const std::string& sensorType, double threshold) const {
     std::cout << "\n Searching for Critical Sensors (" << sensorType << " > " << threshold << ") in system " << this->systemName << "\n";
     for (const Room& room : this->roomList) {
