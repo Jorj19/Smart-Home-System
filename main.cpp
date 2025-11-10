@@ -7,9 +7,8 @@
 #include "Room.h"
 #include "HomeSystem.h"
 #include "Alert.h"
-#include "Rule.h"
 #include "AnalysisEngine.h"
-
+#include "ConfigManager.h"
 
 void runDemoSystem();
 void runInteractiveSystem();
@@ -18,8 +17,9 @@ void clearInputBuffer();
 
 int main() {
     std::cout << "\n===== THE HOMEY - Main Menu =====\n";
-    std::cout << "1. Create New System (Interactive)\n";
+    std::cout << "1. Create New System \n";
     std::cout << "2. Run Demo System\n";
+    std::cout << "3. Load System from File \n";
     std::cout << "0. Exit\n";
     std::cout << "Select option: ";
 
@@ -38,6 +38,32 @@ int main() {
     case 2:
         runDemoSystem();
         break;
+    case 3: {
+        std::string filename;
+        std::cout << "Enter configuration file to load (e.g., config.txt or my_home.txt): ";
+        clearInputBuffer();
+        std::getline(std::cin, filename);
+
+        HomeSystem loadedSystem = ConfigManager::loadSystemFromFile(filename);
+
+        AnalysisEngine loadedEngine(loadedSystem, "rules.txt");
+
+
+        std::cout << "\n--- Running analysis on loaded system... ---\n";
+        std::cout << loadedSystem;
+        std::cout << loadedEngine.generateStatusReport();
+        std::cout << "System Health Score: " << loadedEngine.calculateHealthScore() << "/100\n";
+        std::vector<Alert> alerts = loadedEngine.generateAlerts();
+        if (alerts.empty()) {
+            std::cout << "No alerts detected. System is stable.\n";
+        } else {
+            std::cout << "\n!!! ALERTS DETECTED !!!\n";
+            for (const Alert& a : alerts) {
+                std::cout << "  -> " << a << "\n";
+            }
+        }
+        break;
+    }
     case 0:
         std::cout << "Goodbye!\n";
         return 0;
@@ -55,19 +81,7 @@ void runInteractiveSystem() {
     std::getline(std::cin, systemName);
 
     HomeSystem userSystem(systemName);
-    AnalysisEngine userEngine(userSystem);
-
-    userEngine.addRule(Rule("Temp Critica", "Temperatura", ">", 35.0, "Fire Hazard! Critical Temperature!", 1));
-    userEngine.addRule(Rule("Temp Prea Rece", "Temperatura", "<", 18.0, "Too Cold. Check heating.", 3));
-    userEngine.addRule(Rule("CO2 Slab", "CO2", ">", 1000.0, "Poor Air Quality. Ventilate.", 2));
-    userEngine.addRule(Rule("High Humidity", "Umiditate", ">", 70.0, "High humidity detected! Risk of mold.", 2));
-    userEngine.addRule(Rule("Smoke Detected", "Fum", "==", 1.0, "CRITICAL: SMOKE DETECTED! EVACUATE!", 1));
-    userEngine.addRule(Rule("CO Detected", "CO", ">", 30.0, "CRITICAL: High CO levels detected! Ventilate!", 1));
-    userEngine.addRule(Rule("High Particulates", "PM2.5", ">", 35.0, "Poor Air Quality (PM2.5). Run purifier.", 2));
-    userEngine.addRule(Rule("High VOCs", "TVOC", ">", 500.0, "High VOCs detected (chemical pollutants).", 2));
-    userEngine.addRule(Rule("Loud Noise", "Sunet", ">", 80.0, "Loud noise detected. Check for anomaly.", 2));
-    userEngine.addRule(Rule("Water Leak", "Apa", "==", 1.0, "CRITICAL: Water leak detected!", 1));
-    userEngine.addRule(Rule("Window Open", "ContactFereastra", "==", 1.0, "Window open. Check security/efficiency.", 3));
+    AnalysisEngine userEngine(userSystem, "rules.txt");
 
     while(true) {
         std::cout << "\n--- System: " << systemName << " ---\n";
@@ -75,6 +89,7 @@ void runInteractiveSystem() {
         std::cout << "2. Add Sensor (to a Room)\n";
         std::cout << "3. Run Analysis\n";
         std::cout << "4. Display Full System\n";
+        std::cout << "5. Save system to file\n";
         std::cout << "0. Back to Main Menu\n";
         std::cout << "Select option: ";
 
@@ -152,6 +167,16 @@ void runInteractiveSystem() {
                 std::cout << userSystem;
                 break;
             }
+            case 5: {
+                std::string filename;
+                std::cout << "Enter filename to save as (e.g., my_home.txt): ";
+                clearInputBuffer();
+                std::getline(std::cin, filename);
+
+                // Salvăm DOAR sistemul (fără motorul de reguli)
+                ConfigManager::saveSystemToFile(filename, userSystem);
+                break;
+            }
             default:
                 std::cout << "Invalid option!\n";
                 break;
@@ -211,25 +236,11 @@ void runDemoSystem() {
     std::cout << home;
 
 
-    AnalysisEngine homeBrain(home);
-
-
-    homeBrain.addRule(Rule("Temp Critica", "Temperatura", ">", 35.0, "Fire Hazard! Critical Temperature!", 1));
-    homeBrain.addRule(Rule("Temp Prea Rece", "Temperatura", "<", 19.0, "Too Cold. Check heating.", 3));
-    homeBrain.addRule(Rule("CO2 Slab", "CO2", ">", 1000.0, "Poor Air Quality. Ventilate.", 2));
-    homeBrain.addRule(Rule("High Humidity", "Umiditate", ">", 70.0, "High humidity detected! Risk of mold.", 2));
-    homeBrain.addRule(Rule("Smoke Detected", "Fum", "==", 1.0, "CRITICAL: SMOKE DETECTED! EVACUATE!", 1));
-    homeBrain.addRule(Rule("CO Detected", "CO", ">", 30.0, "CRITICAL: High CO levels detected! Ventilate!", 1));
-    homeBrain.addRule(Rule("High Particulates", "PM2.5", ">", 35.0, "Poor Air Quality (PM2.5). Run purifier.", 2));
-    homeBrain.addRule(Rule("High VOCs", "TVOC", ">", 500.0, "High VOCs detected (chemical pollutants).", 2));
-    homeBrain.addRule(Rule("Loud Noise", "Sunet", ">", 80.0, "Loud noise detected. Check for anomaly.", 2));
-    homeBrain.addRule(Rule("Water Leak", "Apa", "==", 1.0, "CRITICAL: Water leak detected!", 1));
-    homeBrain.addRule(Rule("Window Open", "ContactFereastra", "==", 1.0, "Window open. Check security/efficiency.", 3));
-
+    AnalysisEngine homeBrain(home, "rules.txt");
 
 
     std::cout << "\n--- Test Status Report ---\n";
-    std::string report = homeBrain.generateStatusReport(); // Acum afișează indicii
+    std::string report = homeBrain.generateStatusReport();
     std::cout << report;
 
     std::cout << "\n--- Test Health Score ---\n";

@@ -62,6 +62,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         AnalysisEngine.h
         Rule.cpp
         Rule.h
+        ConfigManager.cpp
+        ConfigManager.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
@@ -88,6 +90,6 @@ if(APPLE)
     install(FILES launcher.command DESTINATION ${DESTINATION_DIR})
 endif()
 
-copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
+copy_files(FILES tastatura.txt rules.txt COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(FILES tastatura.txt config.json DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})

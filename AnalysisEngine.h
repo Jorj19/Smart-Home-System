@@ -35,12 +35,14 @@ private:
     const HomeSystem& system;
     std::vector<Rule> ruleList;
 
+    void loadRulesFromFile(const std::string& filename);
+
     [[nodiscard]] static ComfortCategory calculateRoomComfortCategory(const Room& room);
     [[nodiscard]] static std::string getRoomAcousticDiscomfort(const Room& room);
     [[nodiscard]] static std::string getRoomLuminousDiscomfort(const Room& room);
 
 public:
-    explicit AnalysisEngine(const HomeSystem& sys);
+    explicit AnalysisEngine(const HomeSystem& sys, const std::string& rulesFilename);
 
     void addRule(const Rule& rule);
 

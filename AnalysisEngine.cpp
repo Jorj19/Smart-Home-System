@@ -5,11 +5,15 @@
 #include "AnalysisEngine.h"
 
 #include <sstream>
+#include <fstream>
+#include <iostream>
+#include <algorithm>
+#include <cctype>
 
 
 
-AnalysisEngine::AnalysisEngine(const HomeSystem& sys) : system(sys) {
-
+AnalysisEngine::AnalysisEngine(const HomeSystem& sys, const std::string& rulesFilename) : system(sys) {
+    this->loadRulesFromFile(rulesFilename);
 }
 
 void AnalysisEngine::addRule(const Rule& rule) {
@@ -21,6 +25,42 @@ const std::vector<Rule>& AnalysisEngine::getRuleList() const {
     return this->ruleList;
 }
 
+
+void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "CRITICAL ERROR: Could not load rules file: " << filename << "\n";
+        return;
+    }
+
+    std::cout << "Loading default rules from " << filename << "...\n";
+    std::string line;
+    int lineCount = 0;
+
+    while (std::getline(file, line)) {
+        lineCount++;
+        std::stringstream ss(line);
+        std::string segment;
+        std::vector<std::string> parts;
+        while (std::getline(ss, segment, ',')) {
+            parts.push_back(segment);
+        }
+        if (parts.empty() || parts[0].empty() || parts[0][0] == '#') continue;
+
+        std::string type = parts[0];
+        try {
+            if (type == "RULE" && parts.size() == 7) {
+                Rule newRule(parts[1], parts[2], parts[3], std::stod(parts[4]), parts[5], std::stoi(parts[6]));
+
+                this->addRule(newRule);
+            }
+        } catch (const std::invalid_argument& e) {
+            std::cout << "Error (Rules L" << lineCount << "): Bad data format in line: " << line << "'. Reason: " << e.what() << "\n";
+        }
+    }
+    file.close();
+    std::cout << "Successfully loaded " << this->ruleList.size() << " rules.\n";
+}
 
 
 ComfortCategory AnalysisEngine::calculateRoomComfortCategory(const Room& room) {
