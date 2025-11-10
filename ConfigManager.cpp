@@ -37,10 +37,9 @@ HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
             continue;
         }
 
-        std::string type = parts[0];
 
         try {
-            if (type == "ROOM" && parts.size() == 2) {
+            if (const std::string& type = parts[0]; type == "ROOM" && parts.size() == 2) {
                 loadedSystem.addRoom(Room(parts[1]));
                 std::cout << "Loaded Room: " << parts[1] << "\n";
 
