@@ -47,11 +47,10 @@ void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
         }
         if (parts.empty() || parts[0].empty() || parts[0][0] == '#') continue;
 
-        std::string type = parts[0];
-        try {
-            if (type == "RULE" && parts.size() == 7) {
-                Rule newRule(parts[1], parts[2], parts[3], std::stod(parts[4]), parts[5], std::stoi(parts[6]));
 
+        try {
+            if (const std::string& type = parts[0]; type == "RULE" && parts.size() == 7) {
+                Rule newRule(parts[1], parts[2], parts[3], std::stod(parts[4]), parts[5], std::stoi(parts[6]));
                 this->addRule(newRule);
             }
         } catch (const std::invalid_argument& e) {
