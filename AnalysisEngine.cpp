@@ -53,7 +53,7 @@ void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
                 this->addRule(newRule);
             }
         } catch (const std::invalid_argument& e) {
-            throw RuleEngineException("Line " + std::to_string(lineCount) + ": Numeric conversion failed.");
+            throw RuleEngineException("Line " + std::to_string(lineCount) + ": Numeric conversion failed." + e.what());
         }
     }
     file.close();

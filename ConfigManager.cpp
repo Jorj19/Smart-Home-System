@@ -54,7 +54,7 @@ HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
                 std::cout << "Warning (L" << lineCount << "): Unknown or malformed line: " << line << "\n";
             }
         } catch (const std::invalid_argument& e) {
-            throw InvalidDataSensorException("Line " + std::to_string(lineCount) + ": Numeric conversion failed.");
+            throw InvalidDataSensorException("Line " + std::to_string(lineCount) + ": Numeric conversion failed." + e.what());
         }
     }
 
