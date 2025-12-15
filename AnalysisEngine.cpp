@@ -3,7 +3,7 @@
 //
 
 #include "AnalysisEngine.h"
-
+#include "HomeExceptions.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -29,8 +29,7 @@ const std::vector<Rule>& AnalysisEngine::getRuleList() const {
 void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cout << "CRITICAL ERROR: Could not load rules file: " << filename << "\n";
-        return;
+        throw FileConfigException(filename);
     }
 
     std::cout << "Loading default rules from " << filename << "...\n";
@@ -54,7 +53,7 @@ void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
                 this->addRule(newRule);
             }
         } catch (const std::invalid_argument& e) {
-            std::cout << "Error (Rules L" << lineCount << "): Bad data format in line: " << line << "'. Reason: " << e.what() << "\n";
+            throw RuleEngineException("Line " + std::to_string(lineCount) + ": Numeric conversion failed.");
         }
     }
     file.close();

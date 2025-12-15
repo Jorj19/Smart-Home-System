@@ -9,6 +9,7 @@
 #include "Alert.h"
 #include "AnalysisEngine.h"
 #include "ConfigManager.h"
+#include "HomeExceptions.h"
 
 void runDemoSystem();
 void runInteractiveSystem();
@@ -16,60 +17,69 @@ void clearInputBuffer();
 
 
 int main() {
-    std::cout << "\n===== THE HOMEY - Main Menu =====\n";
-    std::cout << "1. Create New System \n";
-    std::cout << "2. Run Demo System\n";
-    std::cout << "3. Load System from File \n";
-    std::cout << "0. Exit\n";
-    std::cout << "Select option: ";
+    try {
+        std::cout << "\n===== THE HOMEY - Main Menu =====\n";
+        std::cout << "1. Create New System \n";
+        std::cout << "2. Run Demo System\n";
+        std::cout << "3. Load System from File \n";
+        std::cout << "0. Exit\n";
+        std::cout << "Select option: ";
 
-    int option;
-    std::cin >> option;
+        int option;
+        std::cin >> option;
 
-    if (!std::cin) {
-        std::cout << "Invalid input. Please enter a number.\n";
-        clearInputBuffer();
-    }
-
-    switch (option) {
-    case 1:
-        runInteractiveSystem();
-        break;
-    case 2:
-        runDemoSystem();
-        break;
-    case 3: {
-        std::string filename;
-        std::cout << "Enter configuration file to load (e.g., config.txt or my_home.txt): ";
-        clearInputBuffer();
-        std::getline(std::cin, filename);
-
-        HomeSystem loadedSystem = ConfigManager::loadSystemFromFile(filename);
-
-        AnalysisEngine loadedEngine(loadedSystem, "rules.txt");
-
-
-        std::cout << "\n--- Running analysis on loaded system... ---\n";
-        std::cout << loadedSystem;
-        std::cout << loadedEngine.generateStatusReport();
-        std::cout << "System Health Score: " << loadedEngine.calculateHealthScore() << "/100\n";
-        std::vector<Alert> alerts = loadedEngine.generateAlerts();
-        if (alerts.empty()) {
-            std::cout << "No alerts detected. System is stable.\n";
-        } else {
-            std::cout << "\n!!! ALERTS DETECTED !!!\n";
-            for (const Alert& a : alerts) {
-                std::cout << "  -> " << a << "\n";
-            }
+        if (!std::cin) {
+            std::cout << "Invalid input. Please enter a number.\n";
+            clearInputBuffer();
         }
-        break;
+
+        switch (option) {
+        case 1:
+            runInteractiveSystem();
+            break;
+        case 2:
+            runDemoSystem();
+            break;
+        case 3: {
+            std::string filename;
+            std::cout << "Enter configuration file to load (e.g., config.txt or my_home.txt): ";
+            clearInputBuffer();
+            std::getline(std::cin, filename);
+
+            HomeSystem loadedSystem = ConfigManager::loadSystemFromFile(filename);
+
+            AnalysisEngine loadedEngine(loadedSystem, "rules.txt");
+
+
+            std::cout << "\n--- Running analysis on loaded system... ---\n";
+            std::cout << loadedSystem;
+            std::cout << loadedEngine.generateStatusReport();
+            std::cout << "System Health Score: " << loadedEngine.calculateHealthScore() << "/100\n";
+            std::vector<Alert> alerts = loadedEngine.generateAlerts();
+            if (alerts.empty()) {
+                std::cout << "No alerts detected. System is stable.\n";
+            } else {
+                std::cout << "\n!!! ALERTS DETECTED !!!\n";
+                for (const Alert& a : alerts) {
+                    std::cout << "  -> " << a << "\n";
+                }
+            }
+            break;
+        }
+        case 0:
+            std::cout << "Goodbye!\n";
+            return 0;
+        default:
+            std::cout << "Invalid option!\n";
+            break;
+        }
     }
-    case 0:
-        std::cout << "Goodbye!\n";
-        return 0;
-    default:
-        std::cout << "Invalid option!\n";
-        break;
+    catch (const HomeExceptions& e) {
+        std::cerr << "\n[!] HOME SYSTEM ERROR: " << e.what() << "\n";
+        std::cerr << "The application will now close safely.\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "\n[!] STANDARD ERROR: " << e.what() << "\n";
     }
 }
 
@@ -103,7 +113,8 @@ void runInteractiveSystem() {
 
         if (option == 0) break;
 
-        switch(option) {
+        try {
+            switch(option) {
             case 1: {
                 std::string roomName;
                 std::cout << "Enter room name: ";
@@ -121,26 +132,24 @@ void runInteractiveSystem() {
 
                 Room* room = userSystem.findRoomByName(roomName);
                 if (room == nullptr) {
-                    std::cout << "Error: Room '" << roomName << "' not found.\n";
-                } else {
-                    std::string type;
-                    double value;
-                    std::string unit;
-                    std::cout << "Enter sensor type (e.g., Temperatura, CO2, Umiditate, Fum...): ";
-                    std::cin >> type;
-                    std::cout << "Enter sensor value (e.g., 22.5, 1 for ON, 0 for OFF): ";
-                    std::cin >> value;
-                    if (!std::cin) {
-                        std::cout << "Error: Invalid number entered.\n";
-                        clearInputBuffer();
-                        continue;
-                    }
-                    std::cout << "Enter sensor unit (e.g., C, ppm, %, bool): ";
-                    std::cin >> unit;
-
-                    room->addSensor(Sensor(type, value, unit));
-                    std::cout << "Sensor added to " << roomName << ".\n";
+                    throw RoomNotFoundException(roomName);
                 }
+                std::string type;
+                double value;
+                std::string unit;
+                std::cout << "Enter sensor type (e.g., Temperatura, CO2, Umiditate, Fum...): ";
+                std::cin >> type;
+                std::cout << "Enter sensor value (e.g., 22.5, 1 for ON, 0 for OFF): ";
+                std::cin >> value;
+                if (!std::cin) {
+                    clearInputBuffer();
+                    throw InvalidDataSensorException("Value must be a number");
+                }
+                std::cout << "Enter sensor unit (e.g., C, ppm, %, bool): ";
+                std::cin >> unit;
+
+                room->addSensor(Sensor(type, value, unit));
+                std::cout << "Sensor added to " << roomName << ".\n";
                 break;
             }
             case 3: {
@@ -177,9 +186,17 @@ void runInteractiveSystem() {
                 ConfigManager::saveSystemToFile(filename, userSystem);
                 break;
             }
-            default:
+            default: {
                 std::cout << "Invalid option!\n";
                 break;
+            }
+            }
+        }
+        catch (const HomeExceptions& e) {
+            std::cout << "\n[!] OPERATION FAILED: " << e.what() << "\n";
+        }
+        catch (const std::exception& e) {
+            std::cout << "\n[!] ERROR: " << e.what() << "\n";
         }
     }
 }

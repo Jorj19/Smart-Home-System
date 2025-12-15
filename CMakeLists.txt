@@ -64,6 +64,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         Rule.h
         ConfigManager.cpp
         ConfigManager.h
+        HomeExceptions.cpp
+        HomeExceptions.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

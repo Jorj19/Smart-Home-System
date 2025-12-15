@@ -1,4 +1,5 @@
 #include "HomeSystem.h"
+#include "HomeExceptions.h"
 #include <utility>
 
 HomeSystem::HomeSystem(std::string name) : systemName(std::move(name)) {
@@ -7,8 +8,7 @@ HomeSystem::HomeSystem(std::string name) : systemName(std::move(name)) {
 
 void HomeSystem::addRoom(const Room& r) {
     if (this->findRoomByName(r.getName()) != nullptr) {
-        std::cout << "Error: A room with the name '" << r.getName() << "' already exists. Not adding.\n";
-        return;
+        throw DuplicateEntityException("Room '" + r.getName() + "'");
     }
 
     this->roomList.push_back(r);
