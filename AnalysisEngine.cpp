@@ -4,16 +4,23 @@
 
 #include "AnalysisEngine.h"
 #include "HomeExceptions.h"
+#include "Sensor.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <memory>
 
 
 
 AnalysisEngine::AnalysisEngine(const HomeSystem& sys, const std::string& rulesFilename) : system(sys) {
-    this->loadRulesFromFile(rulesFilename);
+    try {
+        this->loadRulesFromFile(rulesFilename);
+    } catch (const FileConfigException& e) {
+        std::cout << "[INFO] Rules file not found (" << rulesFilename << "). Running without custom rules.\n";
+    }
 }
 
 void AnalysisEngine::addRule(const Rule& rule) {
@@ -48,7 +55,8 @@ void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
 
 
         try {
-            if (const std::string& type = parts[0]; type == "RULE" && parts.size() == 7) {
+            if (parts.size() >= 7 && parts[0] == "RULE") {
+                // Format: RULE,SensorType,Op,Value,Msg,Priority
                 Rule newRule(parts[1], parts[2], parts[3], std::stod(parts[4]), parts[5], std::stoi(parts[6]));
                 this->addRule(newRule);
             }
@@ -70,12 +78,12 @@ ComfortCategory AnalysisEngine::calculateRoomComfortCategory(const Room& room) {
     double temp = -99.0;
     double humidity = -99.0;
 
-    for (const Sensor& sensor : room.getSensorList()) {
-        if (sensor.getType() == "Temperatura") {
-            temp = sensor.getValue();
+    for (const auto& sensor : room.getSensorList()) {
+        if (sensor->getType() == "Temperatura") {
+            temp = sensor->getValue();
         }
-        if (sensor.getType() == "Umiditate") {
-            humidity = sensor.getValue();
+        if (sensor->getType() == "Umiditate") {
+            humidity = sensor->getValue();
         }
     }
 
@@ -99,9 +107,9 @@ ComfortCategory AnalysisEngine::calculateRoomComfortCategory(const Room& room) {
 }
 
 std::string AnalysisEngine::getRoomAcousticDiscomfort(const Room& room) {
-    for (const Sensor& sensor : room.getSensorList()) {
-        if (sensor.getType() == "Sunet") {
-            double db = sensor.getValue();
+    for (const auto& sensor : room.getSensorList()) {
+        if (sensor->getType() == "Sunet") {
+            double db = sensor->getValue();
             if (db > 70) return "High";
             if (db > 45) return "Moderate";
             return "Low";
@@ -111,11 +119,11 @@ std::string AnalysisEngine::getRoomAcousticDiscomfort(const Room& room) {
 }
 
 std::string AnalysisEngine::getRoomLuminousDiscomfort(const Room& room) {
-    for (const Sensor& sensor : room.getSensorList()) {
-        if (sensor.getType() == "Lumina") {
-            double lux = sensor.getValue();
+    for (const auto& sensor : room.getSensorList()) {
+        if (sensor->getType() == "Lumina") {
+            double lux = sensor->getValue();
             if (lux > 2000) return "Glare";
-            if (lux < 100) return "Too Dark";
+            if (lux < 50) return "Too Dark";
             return "Good";
         }
     }
@@ -128,13 +136,23 @@ std::vector<Alert> AnalysisEngine::generateAlerts() const {
 
     for (const Room& room : this->system.getRoomList()) {
 
-        for (const Sensor& sensor : room.getSensorList()) {
+        for (const auto& sensor : room.getSensorList()) {
 
             for (const Rule& rule : this->ruleList) {
-                if (rule.isTriggeredBy(sensor)) {
-                    foundAlerts.push_back(Alert(rule.getMessage(), room.getName(), rule.getPriority()));
+                if (rule.isTriggeredBy(*sensor)) {
+                    foundAlerts.emplace_back(rule.getMessage(), room.getName(), rule.getPriority());
                 }
             }
+
+            double hazard = sensor->calculateHazardLevel();
+
+            if (hazard >= 100.0) {
+                foundAlerts.emplace_back("CRITICAL HAZARD: " + sensor->getType(), room.getName(), 1); // Prioritate 1 (Mare)
+            }
+            else if (hazard >= 60.0) {
+                foundAlerts.emplace_back("WARNING: " + sensor->getType() + " high levels", room.getName(), 2); // Prioritate 2
+            }
+
         }
     }
     return foundAlerts;

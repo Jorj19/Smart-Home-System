@@ -5,26 +5,35 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
 class Room {
 private:
     std::string roomName;
-    std::vector<Sensor> sensorList;
+    std::vector<std::shared_ptr<Sensor>> sensorList;
 
 public:
     explicit Room(std::string name);
 
     Room();
 
-    void addSensor(const Sensor& s);
+    ~Room() = default;
 
-    double calculateSensorAverage(const std::string& sensorType) const;
+    Room(const Room& other);
+
+    Room& operator=(Room other);
+
+    friend void swap(Room& first, Room& second) noexcept;
+
+    void addSensor(const std::shared_ptr<Sensor>& s);
+
+    [[nodiscard]] double calculateSensorAverage(const std::string& sensorType) const;
 
     void displaySensorsOverThreshold(double threshold, const std::string& sensorType) const;
 
-    std::string getName() const;
+    [[nodiscard]] std::string getName() const;
 
-    const std::vector<Sensor>& getSensorList() const;
+    [[nodiscard]] const std::vector<std::shared_ptr<Sensor>>& getSensorList() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Room& r);
 };

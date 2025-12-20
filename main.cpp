@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <memory>
+#include <algorithm>
 
 #include "Sensor.h"
 #include "Room.h"
@@ -15,6 +17,11 @@ void runDemoSystem();
 void runInteractiveSystem();
 void clearInputBuffer();
 
+std::string toLower(std::string str) {
+    std::ranges::transform(str.begin(), str.end(), str.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+    return str;
+}
 
 int main() {
     try {
@@ -135,21 +142,55 @@ void runInteractiveSystem() {
                     throw RoomNotFoundException(roomName);
                 }
                 std::string type;
-                double value;
-                std::string unit;
+                double val;
                 std::cout << "Enter sensor type (e.g., Temperatura, CO2, Umiditate, Fum...): ";
                 std::cin >> type;
                 std::cout << "Enter sensor value (e.g., 22.5, 1 for ON, 0 for OFF): ";
-                std::cin >> value;
+                std::cin >> val;
                 if (!std::cin) {
-                    clearInputBuffer();
                     throw InvalidDataSensorException("Value must be a number");
                 }
-                std::cout << "Enter sensor unit (e.g., C, ppm, %, bool): ";
-                std::cin >> unit;
+                clearInputBuffer();
 
-                room->addSensor(Sensor(type, value, unit));
-                std::cout << "Sensor added to " << roomName << ".\n";
+                std::shared_ptr<Sensor> newSensor = nullptr;
+                std::string sensorType = toLower(type);
+
+                if (sensorType == "temperatura") {
+                    newSensor = std::make_shared<temperatureSensor>(val);
+                }
+                else if (sensorType == "umiditate") {
+                    newSensor = std::make_shared<humiditySensor>(val);
+                }
+                else if (sensorType == "lumina") {
+                    newSensor = std::make_shared<lightSensor>(val);
+                }
+                else if (sensorType == "fum") {
+                    newSensor = std::make_shared<smokeSensor>(val);
+                }
+                else if (sensorType == "pm2.5" || type == "pm25") {
+                    newSensor = std::make_shared<particleSensor>(val);
+                }
+                else if (sensorType == "co" || type == "co2" || type == "tvoc") {
+                    std::string unit;
+                    std::cout << "Enter Unit (ppm, ppb): ";
+                    std::getline(std::cin, unit);
+
+                    // Pentru gaze, normalizăm numele să fie Uppercase (CO2, nu co2)
+                    std::string normalizedType = type;
+                    if(sensorType == "co") normalizedType = "CO";
+                    if(sensorType == "co2") normalizedType = "CO2";
+                    if(sensorType == "tvoc") normalizedType = "TVOC";
+
+                    newSensor = std::make_shared<toxicGasSensor>(normalizedType, val, unit);
+                }
+                else {
+                    std::cout << "[WARNING] Unknown sensor type. Sensor NOT added.\n";
+                }
+
+                if (newSensor) {
+                    room->addSensor(newSensor);
+                    std::cout << "[SUCCESS] " << type << " sensor added to " << roomName << ".\n";
+                }
                 break;
             }
             case 3: {
@@ -206,44 +247,43 @@ void runDemoSystem() {
 
     HomeSystem home("The Homey (Demo)");
 
+
+    // LIVING ROOM
     Room livingRoom("Living Room");
-    livingRoom.addSensor(Sensor("Temperatura", 23.0, "C"));
-    livingRoom.addSensor(Sensor("Umiditate", 50.0, "%")); // Ideal
-    livingRoom.addSensor(Sensor("TVOC", 100.0, "ppb"));
-    livingRoom.addSensor(Sensor("CO2", 500.0, "ppm"));
-    livingRoom.addSensor(Sensor("PM2.5", 10.0, "ug/m3"));
-    livingRoom.addSensor(Sensor("Lumina", 450.0, "lux")); // Good
-    livingRoom.addSensor(Sensor("Sunet", 40.0, "dB")); // Low
-    livingRoom.addSensor(Sensor("Fum", 0.0, "bool"));
-    livingRoom.addSensor(Sensor("CO", 0.0, "ppm"));
-    livingRoom.addSensor(Sensor("ContactFereastra", 0.0, "bool"));
+    // Folosim make_shared pentru a crea pointeri smart catre clasele derivate
+    livingRoom.addSensor(std::make_shared<temperatureSensor>(23.0));
+    livingRoom.addSensor(std::make_shared<humiditySensor>(50.0));
+    livingRoom.addSensor(std::make_shared<toxicGasSensor>("TVOC", 100.0, "ppb"));
+    livingRoom.addSensor(std::make_shared<toxicGasSensor>("CO2", 500.0, "ppm"));
+    livingRoom.addSensor(std::make_shared<particleSensor>(10.0));
+    livingRoom.addSensor(std::make_shared<lightSensor>(450.0));
+    livingRoom.addSensor(std::make_shared<smokeSensor>(0.0));
+    livingRoom.addSensor(std::make_shared<toxicGasSensor>("CO", 0.0, "ppm"));
 
+    // BEDROOM
     Room bedroom("Bedroom");
-    bedroom.addSensor(Sensor("Temperatura", 18.5, "C")); // Alert
-    bedroom.addSensor(Sensor("Umiditate", 55.0, "%"));
-    bedroom.addSensor(Sensor("TVOC", 50.0, "ppb"));
-    bedroom.addSensor(Sensor("CO2", 1100.0, "ppm")); // Alert
-    bedroom.addSensor(Sensor("PM2.5", 5.0, "ug/m3"));
-    bedroom.addSensor(Sensor("Lumina", 50.0, "lux")); // Too Dark
-    bedroom.addSensor(Sensor("Sunet", 30.0, "dB"));
-    bedroom.addSensor(Sensor("Fum", 0.0, "bool"));
-    bedroom.addSensor(Sensor("CO", 0.0, "ppm"));
-    bedroom.addSensor(Sensor("ContactFereastra", 1.0, "bool")); // Alert
+    bedroom.addSensor(std::make_shared<temperatureSensor>(18.5)); // Putina racoare (Notice)
+    bedroom.addSensor(std::make_shared<humiditySensor>(55.0));
+    bedroom.addSensor(std::make_shared<toxicGasSensor>("TVOC", 50.0, "ppb"));
+    bedroom.addSensor(std::make_shared<toxicGasSensor>("CO2", 1100.0, "ppm")); // Aer inchis (Notice)
+    bedroom.addSensor(std::make_shared<particleSensor>(5.0));
+    bedroom.addSensor(std::make_shared<lightSensor>(50.0)); // Intuneric
+    bedroom.addSensor(std::make_shared<smokeSensor>(0.0));
+    bedroom.addSensor(std::make_shared<toxicGasSensor>("CO", 0.0, "ppm"));
 
+    // KITCHEN (Multe alerte)
     Room kitchen("Kitchen");
-    kitchen.addSensor(Sensor("Temperatura", 40.0, "C")); // Alert
-    kitchen.addSensor(Sensor("Umiditate", 75.0, "%")); // Alert
-    kitchen.addSensor(Sensor("TVOC", 600.0, "ppb")); // Alert
-    kitchen.addSensor(Sensor("CO2", 800.0, "ppm"));
-    kitchen.addSensor(Sensor("PM2.5", 40.0, "ug/m3")); // Alert
-    kitchen.addSensor(Sensor("Lumina", 600.0, "lux"));
-    kitchen.addSensor(Sensor("Sunet", 65.0, "dB"));
-    kitchen.addSensor(Sensor("Fum", 1.0, "bool")); // Alert
-    kitchen.addSensor(Sensor("CO", 35.0, "ppm")); // Alert
-    kitchen.addSensor(Sensor("ContactFereastra", 0.0, "bool"));
+    kitchen.addSensor(std::make_shared<temperatureSensor>(65.0)); // CRITIC (Foc)
+    kitchen.addSensor(std::make_shared<humiditySensor>(75.0));   // Warning
+    kitchen.addSensor(std::make_shared<toxicGasSensor>("TVOC", 600.0, "ppb"));
+    kitchen.addSensor(std::make_shared<toxicGasSensor>("CO2", 800.0, "ppm"));
+    kitchen.addSensor(std::make_shared<particleSensor>(40.0));   // Notice
+    kitchen.addSensor(std::make_shared<lightSensor>(600.0));
+    kitchen.addSensor(std::make_shared<smokeSensor>(1.0));       // CRITIC (Fum)
+    kitchen.addSensor(std::make_shared<toxicGasSensor>("CO", 35.0, "ppm")); // Warning
 
     Room garage("Garage");
-    garage.addSensor(Sensor("ContactFereastra", 0.0, "bool"));
+    // Garage gol
 
     home.addRoom(livingRoom);
     home.addRoom(bedroom);
