@@ -25,9 +25,9 @@ public:
 
     void display(std::ostream& os) const;
 
-    [[nodiscard]] std::string getType() const;
+    [[nodiscard]] const std::string& getType() const;
     [[nodiscard]] double getValue() const;
-    [[nodiscard]] std::string getUnit() const;
+    [[nodiscard]] const std::string& getUnit() const;
 
     static int getTotalSensors();
 

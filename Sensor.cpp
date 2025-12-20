@@ -31,7 +31,7 @@ void Sensor::printDetails(std::ostream& os) const {
     else if (hazard >= 25.0) os << " (! INFO !)";
 }
 
-std::string Sensor::getType() const {
+const std::string& Sensor::getType() const {
     return sensorType;
 }
 
@@ -41,7 +41,7 @@ double Sensor::getValue() const {
 }
 
 // cppcheck-suppress unusedFunction
-std::string Sensor::getUnit() const {
+const std::string& Sensor::getUnit() const {
     return measurementUnit;
 }
 
