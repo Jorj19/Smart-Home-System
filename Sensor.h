@@ -39,49 +39,49 @@ public:
 //temperatura
 class temperatureSensor : public Sensor {
 public:
-    temperatureSensor(double value);
-    double calculateHazardLevel() const override;
-    Sensor* clone() const override;
+    explicit temperatureSensor(double value);
+    [[nodiscard]] double calculateHazardLevel() const override;
+    [[nodiscard]] Sensor* clone() const override;
 };
 
 //umiditate
 class humiditySensor : public Sensor {
 public:
-    humiditySensor(double value);
-    double calculateHazardLevel() const override;
-    Sensor* clone() const override;
+    explicit humiditySensor(double value);
+    [[nodiscard]] double calculateHazardLevel() const override;
+    [[nodiscard]] Sensor* clone() const override;
 };
 
 //lumina
 class lightSensor : public Sensor {
 public:
-    lightSensor(double value);
-    double calculateHazardLevel() const override;
-    Sensor* clone() const override;
+    explicit lightSensor(double value);
+    [[nodiscard]] double calculateHazardLevel() const override;
+    [[nodiscard]] Sensor* clone() const override;
 };
 
 //fum
 class smokeSensor : public Sensor {
 public:
-    smokeSensor(double value);
-    double calculateHazardLevel() const override;
-    Sensor* clone() const override;
+    explicit smokeSensor(double value);
+    [[nodiscard]] double calculateHazardLevel() const override;
+    [[nodiscard]] Sensor* clone() const override;
 };
 
 //gaze toxice (co, co2, tvoc)
 class toxicGasSensor : public Sensor {
 public:
     toxicGasSensor(std::string gasType ,double value, std::string unit);
-    double calculateHazardLevel() const override;
-    Sensor* clone() const override;
+    [[nodiscard]] double calculateHazardLevel() const override;
+    [[nodiscard]] Sensor* clone() const override;
 };
 
 //particule (PM 2.5)
 class particleSensor : public Sensor {
 public:
-    particleSensor(double value);
-    double calculateHazardLevel() const override;
-    Sensor* clone() const override;
+    explicit particleSensor(double value);
+    [[nodiscard]] double calculateHazardLevel() const override;
+    [[nodiscard]] Sensor* clone() const override;
 };
 
 
