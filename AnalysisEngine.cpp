@@ -19,7 +19,7 @@ AnalysisEngine::AnalysisEngine(const HomeSystem& sys, const std::string& rulesFi
     try {
         this->loadRulesFromFile(rulesFilename);
     } catch (const FileConfigException& e) {
-        std::cout << "[INFO] Rules file not found (" << rulesFilename << "). Running without custom rules.\n";
+        std::cout << "[INFO]" << e.what() << " (" << rulesFilename << "). Running without custom rules.\n";
     }
 }
 

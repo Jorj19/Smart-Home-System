@@ -215,6 +215,7 @@ void runInteractiveSystem() {
             case 4: {
                 std::cout << "\n--- Displaying Current System ---\n";
                 std::cout << userSystem;
+                std::cout << "Total active sensors in simulation: " << Sensor::getTotalSensors() << "\n";
                 break;
             }
             case 5: {
