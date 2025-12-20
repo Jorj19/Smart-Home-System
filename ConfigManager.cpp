@@ -75,7 +75,7 @@ HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
                     else if (sensorTypeLower == "lumina") {
                         newSensor = std::make_shared<lightSensor>(sensorValue);
                     }
-                    else if (sensorTypeLower == "pm2.5" || type == "pm25") {
+                    else if (sensorTypeLower == "pm2.5" || sensorTypeLower == "pm25") {
                         newSensor = std::make_shared<particleSensor>(sensorValue);
                     }
                     else if (sensorTypeLower == "co") {
