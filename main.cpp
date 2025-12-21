@@ -410,47 +410,63 @@ void runInteractiveSystem() {
 }
 
 void runDemoSystem() {
-    std::cout << "\n--- Running Demo System (Full Sensor Suite) ---\n";
+    std::cout << "\n--- Running Demo System (Live Data from Server) ---\n";
 
-    HomeSystem home("The Homey (Demo)");
+    std::string ip = "192.168.100.112";
+    std::cout << "[INIT] Fetching live data from " << ip << "...\n";
 
+    // 2. datele de baza
+    double baseTemp = getLiveValueFromPi("Temperatura", ip);
+    double baseHum  = getLiveValueFromPi("Umiditate", ip);
+    double baseLux  = getLiveValueFromPi("Lumina", ip);
+    double baseCO2  = getLiveValueFromPi("CO2", ip);
+    double basePM   = getLiveValueFromPi("PM2.5", ip);
+    double baseFum  = getLiveValueFromPi("Fum", ip);
+    double baseTVOC = getLiveValueFromPi("TVOC", ip);
+    double baseCO   = getLiveValueFromPi("CO", ip);
 
-    // LIVING ROOM
+    std::cout << "[INIT] Data fetched. Building rooms...\n";
+
+    HomeSystem home("The Homey (Live Demo)");
+
+    // aici avem datele reale (in living se afla raspberry pi-ul)
     Room livingRoom("Living Room");
-    // Folosim make_shared pentru a crea pointeri smart catre clasele derivate
-    livingRoom.addSensor(std::make_shared<temperatureSensor>(23.0));
-    livingRoom.addSensor(std::make_shared<humiditySensor>(50.0));
-    livingRoom.addSensor(std::make_shared<toxicGasSensor>("TVOC", 100.0, "ppb"));
-    livingRoom.addSensor(std::make_shared<toxicGasSensor>("CO2", 500.0, "ppm"));
-    livingRoom.addSensor(std::make_shared<particleSensor>(10.0));
-    livingRoom.addSensor(std::make_shared<lightSensor>(450.0));
-    livingRoom.addSensor(std::make_shared<smokeSensor>(0.0));
-    livingRoom.addSensor(std::make_shared<toxicGasSensor>("CO", 0.0, "ppm"));
+    livingRoom.addSensor(std::make_shared<temperatureSensor>(baseTemp));
+    livingRoom.addSensor(std::make_shared<humiditySensor>(baseHum));
+    livingRoom.addSensor(std::make_shared<toxicGasSensor>("TVOC", baseTVOC, "ppb"));
+    livingRoom.addSensor(std::make_shared<toxicGasSensor>("CO2", baseCO2, "ppm"));
+    livingRoom.addSensor(std::make_shared<particleSensor>(basePM));
+    livingRoom.addSensor(std::make_shared<lightSensor>(baseLux));
+    livingRoom.addSensor(std::make_shared<smokeSensor>(baseFum));
+    livingRoom.addSensor(std::make_shared<toxicGasSensor>("CO", baseCO, "ppm"));
 
-    // BEDROOM
+
     Room bedroom("Bedroom");
-    bedroom.addSensor(std::make_shared<temperatureSensor>(18.5)); // Putina racoare (Notice)
-    bedroom.addSensor(std::make_shared<humiditySensor>(55.0));
-    bedroom.addSensor(std::make_shared<toxicGasSensor>("TVOC", 50.0, "ppb"));
-    bedroom.addSensor(std::make_shared<toxicGasSensor>("CO2", 1100.0, "ppm")); // Aer inchis (Notice)
-    bedroom.addSensor(std::make_shared<particleSensor>(5.0));
-    bedroom.addSensor(std::make_shared<lightSensor>(50.0)); // Intuneric
-    bedroom.addSensor(std::make_shared<smokeSensor>(0.0));
-    bedroom.addSensor(std::make_shared<toxicGasSensor>("CO", 0.0, "ppm"));
+    bedroom.addSensor(std::make_shared<temperatureSensor>(applySimulationOffset(baseTemp, "Temperatura")));
+    bedroom.addSensor(std::make_shared<humiditySensor>(applySimulationOffset(baseHum, "Umiditate")));
+    bedroom.addSensor(std::make_shared<toxicGasSensor>("TVOC", applySimulationOffset(baseTVOC, "TVOC"), "ppb"));
+    bedroom.addSensor(std::make_shared<toxicGasSensor>("CO2", applySimulationOffset(baseCO2, "CO2"), "ppm"));
+    bedroom.addSensor(std::make_shared<particleSensor>(applySimulationOffset(basePM, "PM2.5")));
+    bedroom.addSensor(std::make_shared<lightSensor>(applySimulationOffset(baseLux, "Lumina")));
+    bedroom.addSensor(std::make_shared<smokeSensor>(baseFum)); // Fumul de obicei e la fel (0)
+    bedroom.addSensor(std::make_shared<toxicGasSensor>("CO", baseCO, "ppm"));
 
-    // KITCHEN (Multe alerte)
+
     Room kitchen("Kitchen");
-    kitchen.addSensor(std::make_shared<temperatureSensor>(65.0)); // CRITIC (Foc)
-    kitchen.addSensor(std::make_shared<humiditySensor>(75.0));   // Warning
-    kitchen.addSensor(std::make_shared<toxicGasSensor>("TVOC", 600.0, "ppb"));
-    kitchen.addSensor(std::make_shared<toxicGasSensor>("CO2", 800.0, "ppm"));
-    kitchen.addSensor(std::make_shared<particleSensor>(40.0));   // Notice
-    kitchen.addSensor(std::make_shared<lightSensor>(600.0));
-    kitchen.addSensor(std::make_shared<smokeSensor>(1.0));       // CRITIC (Fum)
-    kitchen.addSensor(std::make_shared<toxicGasSensor>("CO", 35.0, "ppm")); // Warning
+    // aici adaugam un offset mai mare - in bucatarie e mai cald
+    double kitchenTemp = applySimulationOffset(baseTemp, "Temperatura") + 2.0;
+
+    kitchen.addSensor(std::make_shared<temperatureSensor>(kitchenTemp));
+    kitchen.addSensor(std::make_shared<humiditySensor>(applySimulationOffset(baseHum, "Umiditate")));
+    kitchen.addSensor(std::make_shared<toxicGasSensor>("TVOC", applySimulationOffset(baseTVOC, "TVOC"), "ppb"));
+    kitchen.addSensor(std::make_shared<toxicGasSensor>("CO2", applySimulationOffset(baseCO2, "CO2"), "ppm"));
+    kitchen.addSensor(std::make_shared<particleSensor>(applySimulationOffset(basePM, "PM2.5")));
+    kitchen.addSensor(std::make_shared<lightSensor>(applySimulationOffset(baseLux, "Lumina")));
+    kitchen.addSensor(std::make_shared<smokeSensor>(baseFum));
+    kitchen.addSensor(std::make_shared<toxicGasSensor>("CO", baseCO, "ppm"));
 
     Room garage("Garage");
-    // Garage gol
+    // gol
 
     home.addRoom(livingRoom);
     home.addRoom(bedroom);
@@ -461,7 +477,6 @@ void runDemoSystem() {
 
 
     AnalysisEngine homeBrain(home, "rules.txt");
-
 
     std::cout << "\n--- Test Status Report ---\n";
     std::string report = homeBrain.generateStatusReport();
