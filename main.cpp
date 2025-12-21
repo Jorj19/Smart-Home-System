@@ -4,6 +4,7 @@
 #include <limits>
 #include <memory>
 #include <algorithm>
+#include <random>
 
 #include "Sensor.h"
 #include "Room.h"
@@ -12,6 +13,7 @@
 #include "AnalysisEngine.h"
 #include "ConfigManager.h"
 #include "HomeExceptions.h"
+#include "httplib.h"
 
 void runDemoSystem();
 void runInteractiveSystem();
@@ -21,6 +23,104 @@ std::string toLower(std::string str) {
     std::ranges::transform(str.begin(), str.end(), str.begin(),
                    [](unsigned char c){ return std::tolower(c); });
     return str;
+}
+
+
+double extractNestedValue(const std::string& json, const std::string& sensorName) {
+    std::string keySearch = "\"" + sensorName + "\"";
+    size_t keyPos = json.find(keySearch);
+    if (keyPos == std::string::npos) return -999.0;
+
+    size_t valueLabelPos = json.find("\"valoare\"", keyPos);
+    if (valueLabelPos == std::string::npos || valueLabelPos - keyPos > 100) return -999.0;
+
+    size_t colonPos = json.find(':', valueLabelPos);
+    size_t endPos = json.find_first_of(",}", colonPos);
+
+    std::string valStr = json.substr(colonPos + 1, endPos - colonPos - 1);
+    try {
+        return std::stod(valStr);
+    } catch (...) {
+        return -999.0;
+    }
+}
+
+double applySimulationOffset(double baseValue, const std::string& type) {
+    if (type == "Fum") {
+        return baseValue;
+    }
+
+    double offset = 0.0;
+
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
+    std::uniform_real_distribution<double> dis(-1.0, 1.0);
+
+    double randomFactor = dis(gen);
+
+    if (type == "Temperatura") {
+        // +/- 3 grade
+        offset = randomFactor * 3.0;
+    }
+    else if (type == "Umiditate") {
+        // +/- 10%
+        offset = randomFactor * 10.0;
+    }
+    else if (type == "Lumina") {
+        // +/- 150 lux
+        offset = randomFactor * 150.0;
+    }
+    else if (type == "CO2" || type == "TVOC") {
+        // +/- 50 unitati
+        offset = randomFactor * 50.0;
+    }
+    else {
+        offset = randomFactor * 1.0;
+    }
+
+    double finalValue = offset + baseValue;
+
+    if (finalValue < 0.0) return 0.0;
+    if (type == "Umiditate" && finalValue > 100.0) return 100.0;
+
+    return finalValue;
+}
+
+
+double getLiveValueFromPi(const std::string& sensorType, const std::string& ip) {
+    std::string typeNormalizat = toLower(sensorType);
+
+    std::string jsonKey;
+
+    if (typeNormalizat == "temperatura")      jsonKey = "temperature";
+    else if (typeNormalizat == "umiditate")   jsonKey = "humidity";
+    else if (typeNormalizat == "lumina")      jsonKey = "lux";
+    else if (typeNormalizat == "co2")         jsonKey = "mq135_co2";
+    else if (typeNormalizat == "pm2.5")       jsonKey = "pm2_5";
+    else if (typeNormalizat == "fum")         jsonKey = "fum";
+    else if (typeNormalizat == "tvoc")        jsonKey = "tvoc";
+    else if (typeNormalizat == "co")          jsonKey = "co";
+    else {
+        std::cout << "[WARNING] Tip senzor necunoscut: " << sensorType << "\n";
+        return 0.0;
+    }
+
+    //conectare la server
+    httplib::Client cli(ip, 5000);
+    cli.set_connection_timeout(0, 500000);
+
+    auto res = cli.Get("/sensors");
+
+    if (res && res->status == 200) {
+        double val = extractNestedValue(res->body, jsonKey);
+        if (val != -999.0) {
+            std::cout << "[SERVER] " << sensorType << " -> Valoare: " << val << "\n";
+            return val;
+        }
+    }
+
+    return 0.0;
 }
 
 int main() {
@@ -134,63 +234,129 @@ void runInteractiveSystem() {
             case 2: {
                 std::string roomName;
                 std::cout << "Enter room name to add sensor to: ";
-                clearInputBuffer();
+                std::cin.ignore();
                 std::getline(std::cin, roomName);
 
                 Room* room = userSystem.findRoomByName(roomName);
                 if (room == nullptr) {
                     throw RoomNotFoundException(roomName);
                 }
-                std::string type;
-                double val;
-                std::cout << "Enter sensor type (e.g., Temperatura, CO2, Umiditate, Fum...): ";
-                std::cin >> type;
-                std::cout << "Enter sensor value (e.g., 22.5, 1 for ON, 0 for OFF): ";
-                std::cin >> val;
-                if (!std::cin) {
-                    throw InvalidDataSensorException("Value must be a number");
-                }
-                clearInputBuffer();
 
-                std::shared_ptr<Sensor> newSensor = nullptr;
-                std::string sensorType = toLower(type);
+                std::cout << "Select sensor type:\n";
+                std::cout << "1. Temperatura\n2. Umiditate\n3. Lumina\n4. CO2\n5. PM2.5\n6. Fum\n7. TVOC\n8. CO\n9. ADD ALL SENSORS (Full Package)\n";
+                std::cout << "Choice: ";
+                int sOpt;
+                std::cin >> sOpt;
 
-                if (sensorType == "temperatura") {
-                    newSensor = std::make_shared<temperatureSensor>(val);
-                }
-                else if (sensorType == "umiditate") {
-                    newSensor = std::make_shared<humiditySensor>(val);
-                }
-                else if (sensorType == "lumina") {
-                    newSensor = std::make_shared<lightSensor>(val);
-                }
-                else if (sensorType == "fum") {
-                    newSensor = std::make_shared<smokeSensor>(val);
-                }
-                else if (sensorType == "pm2.5" || type == "pm25") {
-                    newSensor = std::make_shared<particleSensor>(val);
-                }
-                else if (sensorType == "co" || type == "co2" || type == "tvoc") {
-                    std::string unit;
-                    std::cout << "Enter Unit (ppm, ppb): ";
-                    std::getline(std::cin, unit);
+                std::vector<int> sensorsToAdd;
 
-                    // Pentru gaze, normalizăm numele să fie Uppercase (CO2, nu co2)
-                    std::string normalizedType = type;
-                    if(sensorType == "co") normalizedType = "CO";
-                    if(sensorType == "co2") normalizedType = "CO2";
-                    if(sensorType == "tvoc") normalizedType = "TVOC";
-
-                    newSensor = std::make_shared<toxicGasSensor>(normalizedType, val, unit);
-                }
-                else {
-                    std::cout << "[WARNING] Unknown sensor type. Sensor NOT added.\n";
+                if (sOpt == 9) {
+                    sensorsToAdd = {1, 2, 3, 4, 5, 6, 7, 8};
+                    std::cout << "[INFO] Selected ALL sensors package.\n";
+                } else if (sOpt >= 1 && sOpt <= 8) {
+                    sensorsToAdd.push_back(sOpt);
+                } else {
+                    std::cout << "Invalid selection.\n";
+                    break;
                 }
 
-                if (newSensor) {
-                    room->addSensor(newSensor);
-                    std::cout << "[SUCCESS] " << type << " sensor added to " << roomName << ".\n";
+                std::cout << "\nData Source:\n1. Manual Input\n2. Live from Server (Pi/Sim)\nChoice: ";
+                int sourceOpt;
+                std::cin >> sourceOpt;
+
+                std::string ip = "192.168.100.112";
+
+                bool applyVariation = false;
+
+                if (sourceOpt == 2) {
+                    std::cout << "Is this the MAIN room (with the Raspberry Pi)? (1-Yes, 0-No/Other Room): ";
+                    int isMainRoom;
+                    std::cin >> isMainRoom;
+
+                    if (isMainRoom == 0) {
+                        applyVariation = true;
+                        std::cout << "[INFO] Values will be simulated based on Real Pi data (Variations applied).\n";
+                    }
                 }
+
+                for (int sensorIndex : sensorsToAdd) {
+
+                    std::string type;
+                    switch(sensorIndex) {
+                        case 1: type = "Temperatura"; break;
+                        case 2: type = "Umiditate"; break;
+                        case 3: type = "Lumina"; break;
+                        case 4: type = "CO2"; break;
+                        case 5: type = "PM2.5"; break;
+                        case 6: type = "Fum"; break;
+                        case 7: type = "TVOC"; break;
+                        case 8: type = "CO"; break;
+                        default:
+                            type = "Unknown";
+                            std::cerr << "[Warning] Unknown sensor index provided.\n";
+                            break;
+                    }
+
+                    double val = 0.0;
+
+                    if (sourceOpt == 2) {
+                        double realVal = getLiveValueFromPi(type, ip);
+
+                        if (applyVariation) {
+                            val = applySimulationOffset(realVal, type);
+                            std::cout << "   -> Real: " << realVal << " | Simulated for this room: " << val << "\n";
+                        } else {
+                            val = realVal;
+                        }
+                    } else {
+                        std::cout << "Enter value for " << type << ": ";
+                        std::cin >> val;
+                    }
+
+                    bool found = false;
+
+                    const auto& existingSensors = room->getSensorList();
+                    for (const auto& sensor : existingSensors) {
+                        if (sensor->getType() == type) {
+                            sensor->updateValue(val);
+
+                            std::cout << "[UPDATE] Senzorul " << type << " a fost actualizat la valoarea: " << val << "\n";
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        Sensor* newSensor = nullptr;
+                        try {
+                            switch(sensorIndex) {
+                                case 1: newSensor = new temperatureSensor(val); break;
+                                case 2: newSensor = new humiditySensor(val); break;
+                                case 3: newSensor = new lightSensor(val); break;
+                                case 4: newSensor = new toxicGasSensor("CO2", val, "ppm"); break;
+                                case 5: newSensor = new particleSensor(val); break;
+                                case 6: newSensor = new smokeSensor(val); break;
+                                case 7: newSensor = new toxicGasSensor("TVOC", val, "ppb"); break;
+                                case 8: newSensor = new toxicGasSensor("CO", val, "ppm"); break;
+                                default:
+                                    std::cout << "[ERROR] Cannot create sensor: Invalid index.\n";
+                                    newSensor = nullptr;
+                                    break;
+                            }
+                        } catch (...) {
+                            std::cout << "[ERROR] Error creating " << type << "\n";
+                            continue;
+                        }
+
+                        if (newSensor != nullptr) {
+                            std::shared_ptr<Sensor> sharedSensor(newSensor);
+                            room->addSensor(sharedSensor);
+                            std::cout << "[SUCCESS] Added " << type << ": " << val << " " << newSensor->getUnit() << "\n";
+                        }
+                    }
+                }
+
+                std::cout << "\n[DONE] Finished adding sensors to " << roomName << ".\n";
                 break;
             }
             case 3: {

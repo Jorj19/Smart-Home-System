@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+
 include(cmake/Options.cmake)
 include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
@@ -46,6 +47,7 @@ include(cmake/CopyHelper.cmake)
 # find_package(Threads REQUIRED)
 
 ###############################################################################
+add_library(httplib ext/lib/httplib.cc)
 
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
@@ -68,6 +70,14 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         HomeExceptions.h
 )
 
+target_include_directories(httplib SYSTEM PRIVATE ext/include)
+target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ext/include)
+
+target_link_libraries(${MAIN_EXECUTABLE_NAME}
+        httplib
+        $<$<PLATFORM_ID:Windows>:ws2_32>
+        $<$<PLATFORM_ID:Windows>:crypt32>
+)
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
