@@ -13,7 +13,7 @@
 #include "AnalysisEngine.h"
 #include "ConfigManager.h"
 #include "HomeExceptions.h"
-#include "httplib.h"
+#include <httplib.h>
 
 void runDemoSystem();
 void runInteractiveSystem();

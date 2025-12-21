@@ -1,6 +1,5 @@
 
 #include "Alert.h"
-#include <utility>
 
 int Alert::nextID = 1;
 
