@@ -1,0 +1,3 @@
+[submodule "ServerModules"]
+	path = ServerModules
+	url = https://github.com/Jorj19/Smart-Home-System-RaspberryPi.git

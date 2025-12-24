@@ -15,8 +15,8 @@
 #include "HomeExceptions.h"
 #include <httplib.h>
 
-void runDemoSystem();
-void runInteractiveSystem();
+void runDemoSystem(const std::string& ip);
+void runInteractiveSystem(const std::string& ip);
 void clearInputBuffer();
 
 std::string toLower(std::string str) {
@@ -119,12 +119,50 @@ double getLiveValueFromPi(const std::string& sensorType, const std::string& ip) 
             return val;
         }
     }
+    else {
+        std::cerr << "[!] Connection failed to " << ip << ". Is the server script running?\n";
+    }
 
     return 0.0;
 }
 
 int main() {
     try {
+        std::string ip;
+
+        std::cout << "========= THE HOMEY - CONFIGURATION =========\n";
+        std::cout << "Where should I get sensor data from?\n";
+        std::cout << "1. FAKE SERVER (Simulation on this PC)\n";
+        std::cout << "2. REAL SERVER (Raspberry Pi)\n";
+        std::cout << "Select option: ";
+
+        int serverChoice;
+        std::cin >> serverChoice;
+
+        if (serverChoice == 1) {
+            ip = "127.0.0.1"; // localhost
+
+            std::cout << "\n[INFO] Selected FAKE SERVER.\n";
+            std::cout << "PLEASE MAKE SURE YOU RUN THE PYTHON SCRIPT:\n";
+            std::cout << "Run this command in a separate terminal:\n";
+            std::cout << "  python ServerModules/fake_server.py\n";
+            std::cout << "-----------------------------------------------------\n";
+            std::cout << "Press ENTER once the server is running...";
+            clearInputBuffer();
+            std::cin.get();
+
+        } else if (serverChoice == 2) {
+            std::cout << "\nEnter Raspberry Pi IP Address (e.g., 192.168.100.112): ";
+            clearInputBuffer();
+            std::getline(std::cin, ip);
+            if(ip.empty()) ip = "192.168.100.112";
+
+            std::cout << "[INFO] Selected REAL SERVER at " << ip << "\n";
+        } else {
+            std::cout << "Invalid selection. Defaulting to Localhost Simulation.\n";
+            ip = "127.0.0.1";
+        }
+
         std::cout << "\n===== THE HOMEY - Main Menu =====\n";
         std::cout << "1. Create New System \n";
         std::cout << "2. Run Demo System\n";
@@ -142,10 +180,10 @@ int main() {
 
         switch (option) {
         case 1:
-            runInteractiveSystem();
+            runInteractiveSystem(ip);
             break;
         case 2:
-            runDemoSystem();
+            runDemoSystem(ip);
             break;
         case 3: {
             std::string filename;
@@ -191,7 +229,7 @@ int main() {
 }
 
 
-void runInteractiveSystem() {
+void runInteractiveSystem(const std::string& ip) {
     std::string systemName;
     std::cout << "Enter new system name: ";
     clearInputBuffer();
@@ -263,8 +301,6 @@ void runInteractiveSystem() {
                 std::cout << "\nData Source:\n1. Manual Input\n2. Live from Server (Pi/Sim)\nChoice: ";
                 int sourceOpt;
                 std::cin >> sourceOpt;
-
-                std::string ip = "192.168.100.112";
 
                 bool applyVariation = false;
 
@@ -409,11 +445,8 @@ void runInteractiveSystem() {
     }
 }
 
-void runDemoSystem() {
-    std::cout << "\n--- Running Demo System (Live Data from Server) ---\n";
-
-    std::string ip = "192.168.100.112";
-    std::cout << "[INIT] Fetching live data from " << ip << "...\n";
+void runDemoSystem(const std::string& ip) {
+    std::cout << "\n--- Connecting to Environment at " << ip << " ---\n";
 
     // 2. datele de baza
     double baseTemp = getLiveValueFromPi("Temperatura", ip);
