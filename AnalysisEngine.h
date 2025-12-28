@@ -22,7 +22,6 @@ struct SystemIndices {
     int roomsHot;
     int roomsCold;
     int roomsNoData;
-    std::string overallAcousticDiscomfort;
     std::string overallLuminousDiscomfort;
 };
 
@@ -34,7 +33,7 @@ private:
     void loadRulesFromFile(const std::string& filename);
 
     [[nodiscard]] static ComfortCategory calculateRoomComfortCategory(const Room& room);
-    [[nodiscard]] static std::string getRoomAcousticDiscomfort(const Room& room);
+
     [[nodiscard]] static std::string getRoomLuminousDiscomfort(const Room& room);
 
     [[nodiscard]] double calculateAirQualityScore(const Room& room) const;
