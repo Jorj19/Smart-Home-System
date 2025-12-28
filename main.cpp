@@ -126,11 +126,7 @@ double getLiveValueFromPi(const std::string& sensorType, const std::string& ip) 
     return 0.0;
 }
 
-int main(int argc, char** argv) {
-    if (argc > 0 && std::strstr(argv[0], "oop-client")) {
-        return 0;
-    }
-
+int main() {
     try {
         std::string ip;
 
