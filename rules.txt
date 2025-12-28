@@ -1,14 +1,34 @@
-# === Fisierul de Reguli pentru The Homey ===
-# Format: NumeRegula,TipSenzor,Conditie(> < ==),Prag,MesajAlerta,Prioritate
+# === Rules file for The Homey Smart System ===
+# Format:
+# RULE,RuleName,SensorType,Condition(> < ==),Threshold,AlertMessage,Priority
+# Priority: 1 = Critical | 2 = Warning | 3 = Info
 
-RULE,Temp Critica,Temperatura,>,35.0,Fire Hazard! Critical Temperature!,1
-RULE,Temp Prea Rece,Temperatura,<,19.0,Too Cold. Check heating.,3
-RULE,CO2 Slab,CO2,>,1000.0,Poor Air Quality. Ventilate.,2
-RULE,High Humidity,Umiditate,>,70.0,High humidity detected! Risk of mold.,2
-RULE,Smoke Detected,Fum,==,1.0,CRITICAL: SMOKE DETECTED! EVACUATE!,1
-RULE,CO Detected,CO,>,30.0,CRITICAL: High CO levels detected! Ventilate!,1
-RULE,High Particulates,PM2.5,>,35.0,Poor Air Quality (PM2.5). Run purifier.,2
-RULE,High VOCs,TVOC,>,500.0,High VOCs detected (chemical pollutants).,2
-RULE,Loud Noise,Sunet,>,80.0,Loud noise detected. Check for anomaly.,2
-RULE,Water Leak,Apa,==,1.0,CRITICAL: Water leak detected!,1
-RULE,Window Open,ContactFereastra,==,1.0,Window open. Check security/efficiency.,3
+# TEMPERATURE
+RULE,High Temperature,Temperatura,>,35.0,CRITICAL: High temperature detected! Fire hazard!,1
+RULE,Low Temperature,Temperatura,<,18.0,Temperature too low. Heating recommended.,3
+
+# HUMIDITY
+RULE,High Humidity,Umiditate,>,70.0,High humidity detected. Risk of mold.,2
+RULE,Low Humidity,Umiditate,<,30.0,Low humidity detected. Air too dry.,3
+
+# AIR QUALITY
+RULE,High CO2,CO2,>,1000.0,Poor air quality (CO2). Ventilation recommended.,2
+RULE,Very High CO2,CO2,>,2000.0,CRITICAL: Very high CO2 levels! Immediate ventilation required!,1
+
+RULE,High TVOC,TVOC,>,500.0,High TVOC levels detected. Chemical pollution risk.,2
+RULE,Very High TVOC,TVOC,>,2000.0,CRITICAL: Toxic VOC concentration detected!,1
+
+RULE,High PM2.5,PM2.5,>,35.0,High particulate pollution (PM2.5). Air purifier recommended.,2
+RULE,Extreme PM2.5,PM2.5,>,150.0,CRITICAL: Dangerous PM2.5 concentration!,1
+
+# SAFETY
+RULE,Smoke Detected,Fum,==,1.0,CRITICAL: SMOKE DETECTED! EVACUATE IMMEDIATELY!,1
+RULE,Carbon Monoxide High,CO,>,30.0,CRITICAL: Carbon monoxide detected! Ventilate immediately!,1
+RULE,Carbon Monoxide Warning,CO,>,9.0,Elevated CO levels detected.,2
+
+# LIGHT
+RULE,Low Light,Lumina,<,50.0,Lighting too low. Visibility reduced.,3
+RULE,Excessive Light,Lumina,>,2000.0,Too much light detected. Possible glare.,3
+
+# NOISE
+RULE,Loud Noise,Sunet,>,80.0,Loud noise detected. Possible disturbance.,2

@@ -1,7 +1,3 @@
-//
-// Created by bunea on 03.11.2025.
-//
-
 #ifndef OOP_ANALYSISENGINE_H
 #define OOP_ANALYSISENGINE_H
 
@@ -41,6 +37,10 @@ private:
     [[nodiscard]] static std::string getRoomAcousticDiscomfort(const Room& room);
     [[nodiscard]] static std::string getRoomLuminousDiscomfort(const Room& room);
 
+    [[nodiscard]] double calculateAirQualityScore(const Room& room) const;
+    [[nodiscard]] double calculateComfortScore(const Room& room) const;
+    [[nodiscard]] double calculateSafetyScore(const Room& room) const;
+
 public:
     explicit AnalysisEngine(const HomeSystem& sys, const std::string& rulesFilename);
 
@@ -49,13 +49,9 @@ public:
     [[nodiscard]] const std::vector<Rule>& getRuleList() const;
 
     [[nodiscard]] std::vector<Alert> generateAlerts() const;
-
     [[nodiscard]] std::string generateStatusReport() const;
-
     [[nodiscard]] int calculateHealthScore() const;
-
     [[nodiscard]] SystemIndices calculateSystemIndices() const;
 };
 
-
-#endif //OOP_ANALYSISENGINE_H
+#endif // OOP_ANALYSISENGINE_H

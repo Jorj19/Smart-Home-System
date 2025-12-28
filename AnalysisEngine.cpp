@@ -1,37 +1,29 @@
-//
-// Created by bunea on 03.11.2025.
-//
-
 #include "AnalysisEngine.h"
 #include "HomeExceptions.h"
-#include "Sensor.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <cctype>
 #include <cmath>
-#include <memory>
 
-
-
-AnalysisEngine::AnalysisEngine(const HomeSystem& sys, const std::string& rulesFilename) : system(sys) {
+AnalysisEngine::AnalysisEngine(const HomeSystem& sys, const std::string& rulesFilename)
+    : system(sys) {
     try {
-        this->loadRulesFromFile(rulesFilename);
+        loadRulesFromFile(rulesFilename);
     } catch (const FileConfigException& e) {
-        std::cout << "[INFO]" << e.what() << " (" << rulesFilename << "). Running without custom rules.\n";
+        std::cout << "[INFO] " << e.what() << " (" << rulesFilename
+                  << "). Running without custom rules.\n";
     }
 }
 
 void AnalysisEngine::addRule(const Rule& rule) {
-    this->ruleList.push_back(rule);
+    ruleList.push_back(rule);
 }
 
-// cppcheck-suppress unusedFunction
 const std::vector<Rule>& AnalysisEngine::getRuleList() const {
-    return this->ruleList;
+    return ruleList;
 }
-
 
 void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
     std::ifstream file(filename);
@@ -45,62 +37,56 @@ void AnalysisEngine::loadRulesFromFile(const std::string& filename) {
 
     while (std::getline(file, line)) {
         lineCount++;
+
+        if (line.empty()) continue;
+        if (line[0] == '#') continue;
+
         std::stringstream ss(line);
         std::string segment;
         std::vector<std::string> parts;
+
         while (std::getline(ss, segment, ',')) {
             parts.push_back(segment);
         }
-        if (parts.empty() || parts[0].empty() || parts[0][0] == '#') continue;
 
+        if (parts.size() < 7) continue;
+        if (parts[0] != "RULE") continue;
 
         try {
-            if (parts.size() >= 7 && parts[0] == "RULE") {
-                // Format: RULE,SensorType,Op,Value,Msg,Priority
-                Rule newRule(parts[1], parts[2], parts[3], std::stod(parts[4]), parts[5], std::stoi(parts[6]));
-                this->addRule(newRule);
-            }
-        } catch (const std::invalid_argument& e) {
-            throw RuleEngineException("Line " + std::to_string(lineCount) + ": Numeric conversion failed." + e.what());
+            Rule newRule(parts[1], parts[2], parts[3], std::stod(parts[4]), parts[5], std::stoi(parts[6]));
+            addRule(newRule);
+        } catch (const std::exception& e) {
+            throw RuleEngineException("Line " + std::to_string(lineCount) + ": " + e.what());
         }
     }
-    file.close();
-    std::cout << "Successfully loaded " << this->ruleList.size() << " rules.\n";
+
+    std::cout << "Successfully loaded " << ruleList.size() << " rules.\n";
 }
 
-
 ComfortCategory AnalysisEngine::calculateRoomComfortCategory(const Room& room) {
-    // -1 = Fără Date
-    // 0  = Ideal
-    // 1  = Acceptabil (Ușor cald/rece)
-    // 2  = Prea Cald
-    // -2 = Prea Rece
     double temp = -99.0;
     double humidity = -99.0;
 
     for (const auto& sensor : room.getSensorList()) {
-        if (sensor->getType() == "Temperatura") {
-            temp = sensor->getValue();
-        }
-        if (sensor->getType() == "Umiditate") {
-            humidity = sensor->getValue();
-        }
+        if (!sensor) continue;
+        if (sensor->getType() == "Temperatura") temp = sensor->getValue();
+        if (sensor->getType() == "Umiditate") humidity = sensor->getValue();
     }
 
-    if (temp == -99 || humidity == -99) {
-        return ComfortCategory::NoData; // No data
+    if (temp == -99.0 || humidity == -99.0) {
+        return ComfortCategory::NoData;
     }
 
     if (temp > 20 && temp < 24 && humidity > 40 && humidity < 60) {
-        return ComfortCategory::Ideal; //Ideal comfort
+        return ComfortCategory::Ideal;
     }
 
     if (temp > 26 || humidity > 70) {
-        return ComfortCategory::TooHot; // Too hot
+        return ComfortCategory::TooHot;
     }
 
     if (temp < 19) {
-        return ComfortCategory::TooCold; // too cold
+        return ComfortCategory::TooCold;
     }
 
     return ComfortCategory::Acceptable;
@@ -108,6 +94,7 @@ ComfortCategory AnalysisEngine::calculateRoomComfortCategory(const Room& room) {
 
 std::string AnalysisEngine::getRoomAcousticDiscomfort(const Room& room) {
     for (const auto& sensor : room.getSensorList()) {
+        if (!sensor) continue;
         if (sensor->getType() == "Sunet") {
             double db = sensor->getValue();
             if (db > 70) return "High";
@@ -120,6 +107,7 @@ std::string AnalysisEngine::getRoomAcousticDiscomfort(const Room& room) {
 
 std::string AnalysisEngine::getRoomLuminousDiscomfort(const Room& room) {
     for (const auto& sensor : room.getSensorList()) {
+        if (!sensor) continue;
         if (sensor->getType() == "Lumina") {
             double lux = sensor->getValue();
             if (lux > 2000) return "Glare";
@@ -130,39 +118,117 @@ std::string AnalysisEngine::getRoomLuminousDiscomfort(const Room& room) {
     return "N/A";
 }
 
+double AnalysisEngine::calculateAirQualityScore(const Room& room) const {
+    double score = 100.0;
+
+    for (const auto& sensor : room.getSensorList()) {
+        if (!sensor) continue;
+
+        const std::string& t = sensor->getType();
+        const bool airRelevant = (t == "CO2" || t == "TVOC" || t == "PM2.5" || t == "CO");
+
+        if (!airRelevant) continue;
+
+        for (const Rule& rule : ruleList) {
+            if (rule.isTriggeredBy(*sensor)) {
+                if (rule.getPriority() == 1) score -= 30;
+                else if (rule.getPriority() == 2) score -= 15;
+                else score -= 7;
+            }
+        }
+
+        double hazard = sensor->calculateHazardLevel();
+        if (hazard >= 100.0) score -= 25;
+        else if (hazard >= 60.0) score -= 10;
+    }
+
+    return std::max(0.0, score);
+}
+
+double AnalysisEngine::calculateComfortScore(const Room& room) const {
+    double score = 100.0;
+
+    for (const auto& sensor : room.getSensorList()) {
+        if (!sensor) continue;
+
+        const std::string& t = sensor->getType();
+        const bool comfortRelevant = (t == "Temperatura" || t == "Umiditate" || t == "Lumina" || t == "Sunet");
+
+        if (!comfortRelevant) continue;
+
+        for (const Rule& rule : ruleList) {
+            if (rule.isTriggeredBy(*sensor)) {
+                if (rule.getPriority() == 1) score -= 20;
+                else if (rule.getPriority() == 2) score -= 10;
+                else score -= 5;
+            }
+        }
+
+        double hazard = sensor->calculateHazardLevel();
+        if (hazard >= 100.0) score -= 15;
+        else if (hazard >= 60.0) score -= 7;
+    }
+
+    return std::max(0.0, score);
+}
+
+double AnalysisEngine::calculateSafetyScore(const Room& room) const {
+    double score = 100.0;
+
+    for (const auto& sensor : room.getSensorList()) {
+        if (!sensor) continue;
+
+        const std::string& t = sensor->getType();
+        const bool safetyRelevant = (t == "Fum" || t == "fum" || t == "CO");
+
+        if (!safetyRelevant) continue;
+
+        for (const Rule& rule : ruleList) {
+            if (rule.isTriggeredBy(*sensor)) {
+                if (rule.getPriority() == 1) score -= 50;
+                else if (rule.getPriority() == 2) score -= 25;
+                else score -= 10;
+            }
+        }
+
+        double hazard = sensor->calculateHazardLevel();
+        if (hazard >= 100.0) score -= 40;
+        else if (hazard >= 60.0) score -= 20;
+    }
+
+    return std::max(0.0, score);
+}
 
 std::vector<Alert> AnalysisEngine::generateAlerts() const {
     std::vector<Alert> foundAlerts;
 
-    for (const Room& room : this->system.getRoomList()) {
-
+    for (const Room& room : system.getRoomList()) {
         for (const auto& sensor : room.getSensorList()) {
+            if (!sensor) continue;
 
-            for (const Rule& rule : this->ruleList) {
+            for (const Rule& rule : ruleList) {
                 if (rule.isTriggeredBy(*sensor)) {
                     foundAlerts.emplace_back(rule.getMessage(), room.getName(), rule.getPriority());
                 }
             }
 
             double hazard = sensor->calculateHazardLevel();
-
             if (hazard >= 100.0) {
-                foundAlerts.emplace_back("CRITICAL HAZARD: " + sensor->getType(), room.getName(), 1); // Prioritate 1 (Mare)
+                foundAlerts.emplace_back("CRITICAL HAZARD: " + sensor->getType(), room.getName(), 1);
+            } else if (hazard >= 60.0) {
+                foundAlerts.emplace_back("WARNING: " + sensor->getType() + " high levels", room.getName(), 2);
             }
-            else if (hazard >= 60.0) {
-                foundAlerts.emplace_back("WARNING: " + sensor->getType() + " high levels", room.getName(), 2); // Prioritate 2
-            }
-
         }
     }
+
     return foundAlerts;
 }
 
 std::string AnalysisEngine::generateStatusReport() const {
     std::stringstream ss;
-    ss << "===== SYSTEM STATUS REPORT (" << this->system.getSystemName() << ") =====\n";
+    ss << "===== SYSTEM STATUS REPORT (" << system.getSystemName() << ") =====\n";
 
-    const std::vector<Room>& rooms = this->system.getRoomList();
+    const auto& rooms = system.getRoomList();
     ss << "Total rooms monitored: " << rooms.size() << "\n";
     ss << "-------------------------------\n";
 
@@ -170,21 +236,32 @@ std::string AnalysisEngine::generateStatusReport() const {
         ss << "Room: " << room.getName() << "\n";
 
         std::string comfortText;
-        switch (ComfortCategory comfortCode = calculateRoomComfortCategory(room); comfortCode) {
-        case ComfortCategory::Ideal: comfortText = "Ideal"; break;
-        case ComfortCategory::Acceptable: comfortText = "Acceptable"; break;
-        case ComfortCategory::TooHot: comfortText = "Too Hot/Humid"; break;
-        case ComfortCategory::TooCold: comfortText = "Too Cold"; break;
-        case ComfortCategory::NoData: comfortText = "N/A (Missing Data)"; break;
+        switch (calculateRoomComfortCategory(room)) {
+            case ComfortCategory::Ideal:      comfortText = "Ideal"; break;
+            case ComfortCategory::Acceptable: comfortText = "Acceptable"; break;
+            case ComfortCategory::TooHot:     comfortText = "Too Hot/Humid"; break;
+            case ComfortCategory::TooCold:    comfortText = "Too Cold"; break;
+            case ComfortCategory::NoData:     comfortText = "N/A (Missing Data)"; break;
         }
 
-        ss << "  - Thermal Comfort:     " << comfortText << "\n";
+        if (room.getSensorList().empty()) {
+            ss << "  - No sensors available in this room\n";
+            ss << "  - Air Quality Score:     N/A\n";
+            ss << "  - Comfort Score:         N/A\n";
+            ss << "  - Safety Score:          N/A\n";
+            continue;
+        }
+
+        ss << "  - Thermal Comfort:       " << comfortText << "\n";
         ss << "  - Acoustic Discomfort:   " << getRoomAcousticDiscomfort(room) << "\n";
         ss << "  - Luminous Discomfort:   " << getRoomLuminousDiscomfort(room) << "\n";
+        ss << "  - Air Quality Score:     " << calculateAirQualityScore(room) << "/100\n";
+        ss << "  - Comfort Score:         " << calculateComfortScore(room) << "/100\n";
+        ss << "  - Safety Score:          " << calculateSafetyScore(room) << "/100\n";
+        ss << "-------------------------------\n";
     }
 
-    SystemIndices indices = this->calculateSystemIndices();
-    ss << "-------------------------------\n";
+    SystemIndices indices = calculateSystemIndices();
     ss << "OVERALL SYSTEM INDICES:\n";
     ss << "  - Ideal Rooms: " << indices.roomsIdeal << "\n";
     ss << "  - Acceptable Rooms: " << indices.roomsAcceptable << "\n";
@@ -197,64 +274,47 @@ std::string AnalysisEngine::generateStatusReport() const {
 
     return ss.str();
 }
+
 int AnalysisEngine::calculateHealthScore() const {
-    int totalScore = 100;
+    int score = 100;
 
-    std::vector<Alert> alerts = this->generateAlerts();
-
-    for (const Alert& alert : alerts) {
-
-        if (alert.getPriority() == 1) {
-            totalScore -= 20;
-        }
-
-        if (alert.getPriority() == 2) {
-            totalScore -= 5;
-        }
+    for (const Alert& alert : generateAlerts()) {
+        if (alert.getPriority() == 1) score -= 25;
+        else if (alert.getPriority() == 2) score -= 10;
+        else score -= 3;
     }
 
-    if (totalScore < 0) {
-        totalScore = 0;
-    }
-
-    return totalScore;
+    return std::max(0, score);
 }
 
 SystemIndices AnalysisEngine::calculateSystemIndices() const {
-    SystemIndices indices = {0, 0, 0, 0, 0, "N/A", "N/A"};
-    const std::vector<Room>& rooms = this->system.getRoomList();
-    if (rooms.empty()) {
-        return indices;
-    }
+    SystemIndices indices{0, 0, 0, 0, 0, "N/A", "N/A"};
 
-    int noiseCount = 0;
-    int highNoise = 0;
-    int lightCount = 0;
-    int badLight = 0;
+    const auto& rooms = system.getRoomList();
+    if (rooms.empty()) return indices;
+
+    int noiseCount = 0, highNoise = 0;
+    int lightCount = 0, badLight = 0;
 
     for (const Room& room : rooms) {
-        switch (ComfortCategory comfortCode = calculateRoomComfortCategory(room); comfortCode) {
-        case ComfortCategory::Ideal: indices.roomsIdeal++; break;
-        case ComfortCategory::Acceptable: indices.roomsAcceptable++; break;
-        case ComfortCategory::TooHot: indices.roomsHot++; break;
-        case ComfortCategory::TooCold: indices.roomsCold++; break;
-        case ComfortCategory::NoData: indices.roomsNoData++; break;
+        switch (calculateRoomComfortCategory(room)) {
+            case ComfortCategory::Ideal:indices.roomsIdeal++; break;
+            case ComfortCategory::Acceptable:indices.roomsAcceptable++; break;
+            case ComfortCategory::TooHot:indices.roomsHot++; break;
+            case ComfortCategory::TooCold:indices.roomsCold++; break;
+            case ComfortCategory::NoData:indices.roomsNoData++; break;
         }
 
         std::string acoustic = getRoomAcousticDiscomfort(room);
         if (acoustic != "N/A") {
             noiseCount++;
-            if (acoustic == "High" || acoustic == "Moderate") {
-                highNoise++;
-            }
+            if (acoustic == "High" || acoustic == "Moderate") highNoise++;
         }
 
         std::string luminous = getRoomLuminousDiscomfort(room);
         if (luminous != "N/A") {
             lightCount++;
-            if (luminous == "Glare" || luminous == "Too Dark") {
-                badLight++;
-            }
+            if (luminous == "Glare" || luminous == "Too Dark") badLight++;
         }
     }
 
@@ -266,5 +326,4 @@ SystemIndices AnalysisEngine::calculateSystemIndices() const {
     }
 
     return indices;
-
 }
