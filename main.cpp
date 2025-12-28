@@ -172,12 +172,9 @@ int main() {
         std::cout << "0. Exit\n";
         std::cout << "Select option: ";
 
-        int option;
-        std::cin >> option;
-
-        if (!std::cin) {
-            std::cout << "Invalid input. Please enter a number.\n";
-            clearInputBuffer();
+        int option = 0;
+        if (!(std::cin >> option)) {
+            return 0;
         }
 
         switch (option) {
@@ -251,8 +248,15 @@ void runInteractiveSystem(const std::string& ip) {
         std::cout << "0. Back to Main Menu\n";
         std::cout << "Select option: ";
 
-        int option;
-        std::cin >> option;
+        int option = 0;
+        if (!(std::cin >> option)) {
+            break;
+        }
+
+        if (std::cin.eof()) {
+            break;
+        }
+
         if (!std::cin) {
             std::cout << "Invalid input. Please enter a number.\n";
             clearInputBuffer();
