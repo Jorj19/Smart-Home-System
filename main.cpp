@@ -17,7 +17,6 @@
 
 void runDemoSystem(const std::string& ip);
 void runInteractiveSystem(const std::string& ip);
-void configureDataSource(std::string& ip);
 void clearInputBuffer();
 
 std::string toLower(std::string str) {
@@ -232,42 +231,6 @@ int main() {
         std::cerr << "\n[!] STANDARD ERROR: " << e.what() << "\n";
     }
 }
-
-void configureDataSource(std::string& ip) {
-    std::cout << "\n--- Configure Data Source ---\n";
-    std::cout << "1. FAKE SERVER (127.0.0.1) - Requires 'python fake_server.py'\n";
-    std::cout << "2. REAL SERVER (Raspberry Pi)\n";
-    std::cout << "Choice: ";
-
-    int choice;
-    std::cin >> choice;
-
-    if(!std::cin) {
-        std::cin.clear();
-        clearInputBuffer();
-        return;
-    }
-
-    if (choice == 1) {
-        ip = "127.0.0.1";
-        std::cout << "[SUCCESS] Switched to Localhost (Fake Server).\n";
-    }
-    else if (choice == 2) {
-        std::cout << "Enter Pi IP (default: 192.168.100.112): ";
-        clearInputBuffer();
-        std::string input;
-        std::getline(std::cin, input);
-
-        if(!input.empty()) ip = input;
-        else ip = "192.168.100.112";
-
-        std::cout << "[SUCCESS] Switched to REAL SERVER at " << ip << "\n";
-    }
-    else {
-        std::cout << "Invalid choice. Configuration unchanged.\n";
-    }
-}
-
 
 void runInteractiveSystem(const std::string& ip) {
     std::string systemName;
