@@ -47,8 +47,6 @@ public:
 
     void addRule(const Rule& rule);
 
-    [[nodiscard]] const std::vector<Rule>& getRuleList() const;
-
     [[nodiscard]] std::vector<Alert> generateAlerts() const;
     [[nodiscard]] std::string generateStatusReport() const;
     [[nodiscard]] int calculateHealthScore() const;
