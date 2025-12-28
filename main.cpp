@@ -136,13 +136,9 @@ int main() {
         std::cout << "2. REAL SERVER (Raspberry Pi)\n";
         std::cout << "Select option: ";
 
-        int serverChoice;
-        std::cin >> serverChoice;
-
-        if (std::cin.fail()) {
-            std::cin.clear();
-            serverChoice = 1;
-            std::cout << "\n[AUTO-CONFIG] Input not detected. Defaulting to FAKE SERVER.\n";
+        int serverChoice = 1;
+        if (!(std::cin >> serverChoice)) {
+            return 0;
         }
 
         if (serverChoice == 1) {
