@@ -139,6 +139,12 @@ int main() {
         int serverChoice;
         std::cin >> serverChoice;
 
+        if (std::cin.fail()) {
+            std::cin.clear();
+            serverChoice = 1;
+            std::cout << "\n[AUTO-CONFIG] Input not detected. Defaulting to FAKE SERVER.\n";
+        }
+
         if (serverChoice == 1) {
             ip = "127.0.0.1"; // localhost
 
@@ -146,10 +152,6 @@ int main() {
             std::cout << "PLEASE MAKE SURE YOU RUN THE PYTHON SCRIPT:\n";
             std::cout << "Run this command in a separate terminal:\n";
             std::cout << "  python ServerModules/fake_server.py\n";
-            std::cout << "-----------------------------------------------------\n";
-            std::cout << "Press ENTER once the server is running...";
-            clearInputBuffer();
-            std::cin.get();
 
         } else if (serverChoice == 2) {
             std::cout << "\nEnter Raspberry Pi IP Address (e.g., 192.168.100.112): ";
@@ -190,6 +192,8 @@ int main() {
             std::cout << "Enter configuration file to load (e.g., config.txt or my_home.txt): ";
             clearInputBuffer();
             std::getline(std::cin, filename);
+
+            if(filename.empty()) filename = "config.txt";
 
             HomeSystem loadedSystem = ConfigManager::loadSystemFromFile(filename);
 
