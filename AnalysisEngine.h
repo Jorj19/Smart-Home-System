@@ -39,7 +39,8 @@ private:
 
     [[nodiscard]] double calculateAirQualityScore(const Room& room) const;
     [[nodiscard]] double calculateComfortScore(const Room& room) const;
-    [[nodiscard]] double calculateSafetyScore(const Room& room) const;
+    [[nodiscard]] static double calculateSafetyScore(const Room& room, const std::vector<Rule>& rules);
+
 
 public:
     explicit AnalysisEngine(const HomeSystem& sys, const std::string& rulesFilename);

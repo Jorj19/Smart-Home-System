@@ -172,28 +172,32 @@ double AnalysisEngine::calculateComfortScore(const Room& room) const {
     return std::max(0.0, score);
 }
 
-double AnalysisEngine::calculateSafetyScore(const Room& room) const {
+double AnalysisEngine::calculateSafetyScore(const Room& room, const std::vector<Rule>& rules) {
+    if (room.getSensorList().empty()) {
+        return -1.0;
+    }
+
     double score = 100.0;
 
     for (const auto& sensor : room.getSensorList()) {
-        if (!sensor) continue;
 
-        const std::string& t = sensor->getType();
-        const bool safetyRelevant = (t == "Fum" || t == "fum" || t == "CO");
-
-        if (!safetyRelevant) continue;
-
-        for (const Rule& rule : ruleList) {
-            if (rule.isTriggeredBy(*sensor)) {
-                if (rule.getPriority() == 1) score -= 50;
-                else if (rule.getPriority() == 2) score -= 25;
-                else score -= 10;
+        if (const auto* smoke = dynamic_cast<const smokeSensor*>(sensor.get())) {
+            if (smoke->getValue() > 0.5) {
+                score -= 60;
             }
         }
 
-        double hazard = sensor->calculateHazardLevel();
-        if (hazard >= 100.0) score -= 40;
-        else if (hazard >= 60.0) score -= 20;
+        if (const auto* gas = dynamic_cast<const toxicGasSensor*>(sensor.get())) {
+            if (gas->getType() == "CO" && gas->getValue() > 30.0) {
+                score -= 50;
+            }
+        }
+
+        for (const Rule& rule : rules) {
+            if (rule.isTriggeredBy(*sensor) && rule.getPriority() == 1) {
+                score -= 20;
+            }
+        }
     }
 
     return std::max(0.0, score);
@@ -257,7 +261,7 @@ std::string AnalysisEngine::generateStatusReport() const {
         ss << "  - Luminous Discomfort:   " << getRoomLuminousDiscomfort(room) << "\n";
         ss << "  - Air Quality Score:     " << calculateAirQualityScore(room) << "/100\n";
         ss << "  - Comfort Score:         " << calculateComfortScore(room) << "/100\n";
-        ss << "  - Safety Score:          " << calculateSafetyScore(room) << "/100\n";
+        ss << "  - Safety Score:          " << calculateSafetyScore(room, ruleList) << "/100\n";
         ss << "-------------------------------\n";
     }
 
