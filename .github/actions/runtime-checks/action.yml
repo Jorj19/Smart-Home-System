@@ -51,12 +51,7 @@ runs:
       # env:
       #   ASAN_OPTIONS: detect_leaks=1
       run: |
-        # run server in background
-        ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}" &
-        # run client in foreground
-        cat "${INPUT_FILENAME}" | tr -d '\r' | ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}-client"
-        # server shutdown
-        kill -TERM $(jobs -p)
+        tr -d '\r' < "${INPUT_FILENAME}" | ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}" 
 
     - name: Sanitizers (Windows MSVC)
       shell: bash
@@ -64,12 +59,7 @@ runs:
       if: matrix.cxx == 'cl' && matrix.runs_asan == true
       continue-on-error: true
       run: |
-        # run server in background
-        ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}".exe &
-        # run client in foreground
-        cat "${INPUT_FILENAME}" | ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}-client".exe
-        # server shutdown
-        kill -TERM $(jobs -p)
+        cat "${INPUT_FILENAME}" | ./${{ env.ZIP_NAME }}/"${EXECUTABLE_NAME}".exe
 
     - name: Valgrind
       shell: bash
