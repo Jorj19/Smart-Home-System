@@ -17,6 +17,7 @@
 
 void runDemoSystem(const std::string& ip);
 void runInteractiveSystem(const std::string& ip);
+void configureDataSource(std::string& ip);
 void clearInputBuffer();
 
 std::string toLower(std::string str) {
@@ -128,100 +129,107 @@ double getLiveValueFromPi(const std::string& sensorType, const std::string& ip) 
 
 int main() {
     try {
-        std::string ip;
+        std::string ip = "127.0.0.1";
 
-        std::cout << "========= THE HOMEY - CONFIGURATION =========\n";
-        std::cout << "Where should I get sensor data from?\n";
-        std::cout << "1. FAKE SERVER (Simulation on this PC)\n";
-        std::cout << "2. REAL SERVER (Raspberry Pi)\n";
-        std::cout << "Select option: ";
+        // std::cout << "========= THE HOMEY - CONFIGURATION =========\n";
+        // std::cout << "Where should I get sensor data from?\n";
+        // std::cout << "1. FAKE SERVER (Simulation on this PC)\n";
+        // std::cout << "2. REAL SERVER (Raspberry Pi)\n";
+        // std::cout << "Select option: ";
+        //
+        // int serverChoice;
+        // std::cin >> serverChoice;
+        //
+        // if (std::cin.fail()) {
+        //     std::cin.clear();
+        //     serverChoice = 1;
+        //     std::cout << "\n[AUTO-CONFIG] Input not detected. Defaulting to FAKE SERVER.\n";
+        // }
+        //
+        // if (serverChoice == 1) {
+        //     ip = "127.0.0.1"; // localhost
+        //
+        //     std::cout << "\n[INFO] Selected FAKE SERVER.\n";
+        //     std::cout << "PLEASE MAKE SURE YOU RUN THE PYTHON SCRIPT:\n";
+        //     std::cout << "Run this command in a separate terminal:\n";
+        //     std::cout << "  python ServerModules/fake_server.py\n";
+        //
+        // } else if (serverChoice == 2) {
+        //     std::cout << "\nEnter Raspberry Pi IP Address (e.g., 192.168.100.112): ";
+        //     clearInputBuffer();
+        //     std::getline(std::cin, ip);
+        //     if(ip.empty()) ip = "192.168.100.112";
+        //
+        //     std::cout << "[INFO] Selected REAL SERVER at " << ip << "\n";
+        // } else {
+        //     std::cout << "Invalid selection. Defaulting to Localhost Simulation.\n";
+        //     ip = "127.0.0.1";
+        // }
+        while (true) {
+            std::cout << "\n===== THE HOMEY - Main Menu =====\n";
+            std::cout << "1. Create New System \n";
+            std::cout << "2. Run Demo System\n";
+            std::cout << "3. Load System from File \n";
+            std::cout << "4. CONFIGURE SERVER (Switch Fake/Real)\n";
+            std::cout << "0. Exit\n";
+            std::cout << "Select option: ";
 
-        int serverChoice;
-        std::cin >> serverChoice;
+            int option;
+            std::cin >> option;
 
-        if (std::cin.fail()) {
-            std::cin.clear();
-            serverChoice = 1;
-            std::cout << "\n[AUTO-CONFIG] Input not detected. Defaulting to FAKE SERVER.\n";
-        }
-
-        if (serverChoice == 1) {
-            ip = "127.0.0.1"; // localhost
-
-            std::cout << "\n[INFO] Selected FAKE SERVER.\n";
-            std::cout << "PLEASE MAKE SURE YOU RUN THE PYTHON SCRIPT:\n";
-            std::cout << "Run this command in a separate terminal:\n";
-            std::cout << "  python ServerModules/fake_server.py\n";
-
-        } else if (serverChoice == 2) {
-            std::cout << "\nEnter Raspberry Pi IP Address (e.g., 192.168.100.112): ";
-            clearInputBuffer();
-            std::getline(std::cin, ip);
-            if(ip.empty()) ip = "192.168.100.112";
-
-            std::cout << "[INFO] Selected REAL SERVER at " << ip << "\n";
-        } else {
-            std::cout << "Invalid selection. Defaulting to Localhost Simulation.\n";
-            ip = "127.0.0.1";
-        }
-
-        std::cout << "\n===== THE HOMEY - Main Menu =====\n";
-        std::cout << "1. Create New System \n";
-        std::cout << "2. Run Demo System\n";
-        std::cout << "3. Load System from File \n";
-        std::cout << "0. Exit\n";
-        std::cout << "Select option: ";
-
-        int option;
-        std::cin >> option;
-
-        if (!std::cin) {
-            std::cout << "Invalid input. Please enter a number.\n";
-            clearInputBuffer();
-        }
-
-        switch (option) {
-        case 1:
-            runInteractiveSystem(ip);
-            break;
-        case 2:
-            runDemoSystem(ip);
-            break;
-        case 3: {
-            std::string filename;
-            std::cout << "Enter configuration file to load (e.g., config.txt or my_home.txt): ";
-            clearInputBuffer();
-            std::getline(std::cin, filename);
-
-            if(filename.empty()) filename = "config.txt";
-
-            HomeSystem loadedSystem = ConfigManager::loadSystemFromFile(filename);
-
-            AnalysisEngine loadedEngine(loadedSystem, "rules.txt");
-
-
-            std::cout << "\n--- Running analysis on loaded system... ---\n";
-            std::cout << loadedSystem;
-            std::cout << loadedEngine.generateStatusReport();
-            std::cout << "System Health Score: " << loadedEngine.calculateHealthScore() << "/100\n";
-            std::vector<Alert> alerts = loadedEngine.generateAlerts();
-            if (alerts.empty()) {
-                std::cout << "No alerts detected. System is stable.\n";
-            } else {
-                std::cout << "\n!!! ALERTS DETECTED !!!\n";
-                for (const Alert& a : alerts) {
-                    std::cout << "  -> " << a << "\n";
-                }
+            if (!std::cin) {
+                std::cout << "Invalid input. Please enter a number.\n";
+                clearInputBuffer();
             }
-            break;
+
+            switch (option) {
+            case 1:
+                runInteractiveSystem(ip);
+                return 0;
+            case 2:
+                runDemoSystem(ip);
+                return 0;
+            case 3: {
+                std::string filename;
+                std::cout << "Enter configuration file to load (e.g., config.txt or my_home.txt): ";
+                clearInputBuffer();
+                std::getline(std::cin, filename);
+
+                if(filename.empty()) filename = "config.txt";
+
+                HomeSystem loadedSystem = ConfigManager::loadSystemFromFile(filename);
+
+                AnalysisEngine loadedEngine(loadedSystem, "rules.txt");
+
+
+                std::cout << "\n--- Running analysis on loaded system... ---\n";
+                std::cout << loadedSystem;
+                std::cout << loadedEngine.generateStatusReport();
+                std::cout << "System Health Score: " << loadedEngine.calculateHealthScore() << "/100\n";
+                std::vector<Alert> alerts = loadedEngine.generateAlerts();
+                if (alerts.empty()) {
+                    std::cout << "No alerts detected. System is stable.\n";
+                } else {
+                    std::cout << "\n!!! ALERTS DETECTED !!!\n";
+                    for (const Alert& a : alerts) {
+                        std::cout << "  -> " << a << "\n";
+                    }
+                }
+                return 0;
+            }
+            case 4: {
+                configureDataSource(ip);
+                break;
+            }
+            case 0:
+                std::cout << "Goodbye!\n";
+                return 0;
+            default:
+                std::cout << "Invalid option!\n";
+                break;
+            }
         }
-        case 0:
-            std::cout << "Goodbye!\n";
-            return 0;
-        default:
-            std::cout << "Invalid option!\n";
-            break;
-        }
+
     }
     catch (const HomeExceptions& e) {
         std::cerr << "\n[!] HOME SYSTEM ERROR: " << e.what() << "\n";
@@ -229,6 +237,43 @@ int main() {
     }
     catch (const std::exception& e) {
         std::cerr << "\n[!] STANDARD ERROR: " << e.what() << "\n";
+    }
+
+    return 0;
+}
+
+void configureDataSource(std::string& ip) {
+    std::cout << "\n--- Configure Data Source ---\n";
+    std::cout << "1. FAKE SERVER (127.0.0.1) - Requires 'python fake_server.py'\n";
+    std::cout << "2. REAL SERVER (Raspberry Pi)\n";
+    std::cout << "Choice: ";
+
+    int choice;
+    std::cin >> choice;
+
+    if(!std::cin) {
+        std::cin.clear();
+        clearInputBuffer();
+        return;
+    }
+
+    if (choice == 1) {
+        ip = "127.0.0.1";
+        std::cout << "[SUCCESS] Switched to Localhost (Fake Server).\n";
+    }
+    else if (choice == 2) {
+        std::cout << "Enter Pi IP (default: 192.168.100.112): ";
+        clearInputBuffer();
+        std::string input;
+        std::getline(std::cin, input);
+
+        if(!input.empty()) ip = input;
+        else ip = "192.168.100.112";
+
+        std::cout << "[SUCCESS] Switched to REAL SERVER at " << ip << "\n";
+    }
+    else {
+        std::cout << "Invalid choice. Configuration unchanged.\n";
     }
 }
 
