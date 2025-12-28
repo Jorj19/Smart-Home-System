@@ -186,3 +186,19 @@ double particleSensor::calculateHazardLevel() const {
 Sensor* particleSensor::clone() const {
     return new particleSensor(*this);
 }
+
+//sunet
+soundSensor::soundSensor(double value) : Sensor("Sunet", value, "dB") {}
+
+double soundSensor::calculateHazardLevel() const {
+    double val = this->getValue();
+    if (val >= 120.0) return 100.0;
+    if (val >= 85.0) return 60.0;
+    if (val >= 70.0) return 30.0;
+
+    return 0.0;
+}
+
+Sensor* soundSensor::clone() const {
+    return new soundSensor(*this);
+}

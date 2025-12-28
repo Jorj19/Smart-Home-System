@@ -88,6 +88,19 @@ ComfortCategory AnalysisEngine::calculateRoomComfortCategory(const Room& room) {
     return ComfortCategory::Acceptable;
 }
 
+std::string AnalysisEngine::getRoomAcousticDiscomfort(const Room& room) {
+    for (const auto& sensor : room.getSensorList()) {
+        if (!sensor) continue;
+        if (sensor->getType() == "Sunet") {
+            double db = sensor->getValue();
+            if (db > 70) return "High";
+            if (db > 45) return "Moderate";
+            return "Low";
+        }
+    }
+    return "N/A";
+}
+
 std::string AnalysisEngine::getRoomLuminousDiscomfort(const Room& room) {
     for (const auto& sensor : room.getSensorList()) {
         if (!sensor) continue;
@@ -240,6 +253,7 @@ std::string AnalysisEngine::generateStatusReport() const {
         }
 
         ss << "  - Thermal Comfort:       " << comfortText << "\n";
+        ss << "  - Acoustic Discomfort:   " << getRoomAcousticDiscomfort(room) << "\n";
         ss << "  - Luminous Discomfort:   " << getRoomLuminousDiscomfort(room) << "\n";
         ss << "  - Air Quality Score:     " << calculateAirQualityScore(room) << "/100\n";
         ss << "  - Comfort Score:         " << calculateComfortScore(room) << "/100\n";
@@ -254,6 +268,7 @@ std::string AnalysisEngine::generateStatusReport() const {
     ss << "  - Hot Rooms: " << indices.roomsHot << "\n";
     ss << "  - Cold Rooms: " << indices.roomsCold << "\n";
     ss << "  - (No Data Rooms): " << indices.roomsNoData << "\n";
+    ss << "  - Acoustic Discomfort: " << indices.overallAcousticDiscomfort << "\n";
     ss << "  - Luminous Discomfort: " << indices.overallLuminousDiscomfort << "\n";
     ss << "=================================\n";
 
@@ -273,11 +288,12 @@ int AnalysisEngine::calculateHealthScore() const {
 }
 
 SystemIndices AnalysisEngine::calculateSystemIndices() const {
-    SystemIndices indices{0, 0, 0, 0, 0, "N/A"};
+    SystemIndices indices{0, 0, 0, 0, 0, "N/A", "N/A"};
 
     const auto& rooms = system.getRoomList();
     if (rooms.empty()) return indices;
 
+    int noiseCount = 0, highNoise = 0;
     int lightCount = 0, badLight = 0;
 
     for (const Room& room : rooms) {
@@ -289,6 +305,11 @@ SystemIndices AnalysisEngine::calculateSystemIndices() const {
             case ComfortCategory::NoData:indices.roomsNoData++; break;
         }
 
+        std::string acoustic = getRoomAcousticDiscomfort(room);
+        if (acoustic != "N/A") {
+            noiseCount++;
+            if (acoustic == "High" || acoustic == "Moderate") highNoise++;
+        }
 
         std::string luminous = getRoomLuminousDiscomfort(room);
         if (luminous != "N/A") {
@@ -297,6 +318,9 @@ SystemIndices AnalysisEngine::calculateSystemIndices() const {
         }
     }
 
+    if (noiseCount > 0) {
+        indices.overallAcousticDiscomfort = std::to_string(highNoise) + "/" + std::to_string(noiseCount) + " rooms have discomfort";
+    }
     if (lightCount > 0) {
         indices.overallLuminousDiscomfort = std::to_string(badLight) + "/" + std::to_string(lightCount) + " rooms have discomfort";
     }

@@ -75,11 +75,17 @@ double applySimulationOffset(double baseValue, const std::string& type) {
         // +/- 50 unitati
         offset = randomFactor * 50.0;
     }
+    else if (type == "Sunet") {
+        // +/- 10 db
+        offset = randomFactor * 12.0;
+    }
     else {
         offset = randomFactor * 1.0;
     }
 
     double finalValue = offset + baseValue;
+
+    finalValue = std::round(finalValue * 10.0) / 10.0;
 
     if (finalValue < 0.0) return 0.0;
     if (type == "Umiditate" && finalValue > 100.0) return 100.0;
@@ -93,14 +99,24 @@ double getLiveValueFromPi(const std::string& sensorType, const std::string& ip) 
 
     std::string jsonKey;
 
-    if (typeNormalizat == "temperatura")      jsonKey = "temperature";
-    else if (typeNormalizat == "umiditate")   jsonKey = "humidity";
-    else if (typeNormalizat == "lumina")      jsonKey = "lux";
-    else if (typeNormalizat == "co2")         jsonKey = "mq135_co2";
-    else if (typeNormalizat == "pm2.5")       jsonKey = "pm2_5";
-    else if (typeNormalizat == "fum")         jsonKey = "fum";
-    else if (typeNormalizat == "tvoc")        jsonKey = "tvoc";
-    else if (typeNormalizat == "co")          jsonKey = "co";
+    if (typeNormalizat == "temperatura")
+        jsonKey = "temperature";
+    else if (typeNormalizat == "umiditate")
+        jsonKey = "humidity";
+    else if (typeNormalizat == "lumina")
+        jsonKey = "lux";
+    else if (typeNormalizat == "co2")
+        jsonKey = "mq135_co2";
+    else if (typeNormalizat == "pm2.5")
+        jsonKey = "pm2_5";
+    else if (typeNormalizat == "fum")
+        jsonKey = "fum";
+    else if (typeNormalizat == "tvoc")
+        jsonKey = "tvoc";
+    else if (typeNormalizat == "co")
+        jsonKey = "co";
+    else if (typeNormalizat == "sunet")
+        jsonKey = "sunet";
     else {
         std::cout << "[WARNING] Tip senzor necunoscut: " << sensorType << "\n";
         return 0.0;
@@ -330,6 +346,7 @@ void runInteractiveSystem(const std::string& ip) {
                         case 6: type = "Fum"; break;
                         case 7: type = "TVOC"; break;
                         case 8: type = "CO"; break;
+                        case 9: type = "Sunet"; break;
                         default:
                             type = "Unknown";
                             std::cerr << "[Warning] Unknown sensor index provided.\n";
@@ -377,6 +394,7 @@ void runInteractiveSystem(const std::string& ip) {
                                 case 6: newSensor = new smokeSensor(val); break;
                                 case 7: newSensor = new toxicGasSensor("TVOC", val, "ppb"); break;
                                 case 8: newSensor = new toxicGasSensor("CO", val, "ppm"); break;
+                                case 9: newSensor = new soundSensor(val); break;
                                 default:
                                     std::cout << "[ERROR] Cannot create sensor: Invalid index.\n";
                                     newSensor = nullptr;
@@ -429,7 +447,6 @@ void runInteractiveSystem(const std::string& ip) {
                 clearInputBuffer();
                 std::getline(std::cin, filename);
 
-                // Salvăm DOAR sistemul (fără motorul de reguli)
                 ConfigManager::saveSystemToFile(filename, userSystem);
                 break;
             }
@@ -453,13 +470,14 @@ void runDemoSystem(const std::string& ip) {
 
     // 2. datele de baza
     double baseTemp = getLiveValueFromPi("Temperatura", ip);
-    double baseHum  = getLiveValueFromPi("Umiditate", ip);
-    double baseLux  = getLiveValueFromPi("Lumina", ip);
-    double baseCO2  = getLiveValueFromPi("CO2", ip);
-    double basePM   = getLiveValueFromPi("PM2.5", ip);
-    double baseFum  = getLiveValueFromPi("Fum", ip);
+    double baseHum = getLiveValueFromPi("Umiditate", ip);
+    double baseLux = getLiveValueFromPi("Lumina", ip);
+    double baseCO2 = getLiveValueFromPi("CO2", ip);
+    double basePM = getLiveValueFromPi("PM2.5", ip);
+    double baseFum = getLiveValueFromPi("Fum", ip);
     double baseTVOC = getLiveValueFromPi("TVOC", ip);
-    double baseCO   = getLiveValueFromPi("CO", ip);
+    double baseCO = getLiveValueFromPi("CO", ip);
+    double baseSunet = getLiveValueFromPi("Sunet", ip);
 
     std::cout << "[INIT] Data fetched. Building rooms...\n";
 
@@ -475,6 +493,7 @@ void runDemoSystem(const std::string& ip) {
     livingRoom.addSensor(std::make_shared<lightSensor>(baseLux));
     livingRoom.addSensor(std::make_shared<smokeSensor>(baseFum));
     livingRoom.addSensor(std::make_shared<toxicGasSensor>("CO", baseCO, "ppm"));
+    livingRoom.addSensor(std::make_shared<soundSensor>(baseSunet));
 
 
     Room bedroom("Bedroom");
@@ -486,6 +505,7 @@ void runDemoSystem(const std::string& ip) {
     bedroom.addSensor(std::make_shared<lightSensor>(applySimulationOffset(baseLux, "Lumina")));
     bedroom.addSensor(std::make_shared<smokeSensor>(baseFum)); // Fumul de obicei e la fel (0)
     bedroom.addSensor(std::make_shared<toxicGasSensor>("CO", baseCO, "ppm"));
+    bedroom.addSensor(std::make_shared<soundSensor>(applySimulationOffset(baseSunet, "Sunet") - 10.0));
 
 
     Room kitchen("Kitchen");
@@ -500,6 +520,7 @@ void runDemoSystem(const std::string& ip) {
     kitchen.addSensor(std::make_shared<lightSensor>(applySimulationOffset(baseLux, "Lumina")));
     kitchen.addSensor(std::make_shared<smokeSensor>(baseFum));
     kitchen.addSensor(std::make_shared<toxicGasSensor>("CO", baseCO, "ppm"));
+    kitchen.addSensor(std::make_shared<soundSensor>(applySimulationOffset(baseSunet, "Sunet") + 15.0));
 
     Room garage("Garage");
     // gol

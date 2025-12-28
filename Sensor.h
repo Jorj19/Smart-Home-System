@@ -84,5 +84,12 @@ public:
     [[nodiscard]] Sensor* clone() const override;
 };
 
+//sunet
+class soundSensor : public Sensor {
+public:
+    explicit soundSensor(double value);
+    [[nodiscard]] double calculateHazardLevel() const override;
+    [[nodiscard]] Sensor* clone() const override;
+};
 
 #endif // SENSOR_H
