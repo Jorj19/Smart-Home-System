@@ -300,17 +300,17 @@ void runInteractiveSystem(const std::string& ip) {
                 }
 
                 std::cout << "Select sensor type:\n";
-                std::cout << "1. Temperatura\n2. Umiditate\n3. Lumina\n4. CO2\n5. PM2.5\n6. Fum\n7. TVOC\n8. CO\n9. ADD ALL SENSORS (Full Package)\n";
+                std::cout << "1. Temperatura\n2. Umiditate\n3. Lumina\n4. CO2\n5. PM2.5\n6. Fum\n7. TVOC\n8. CO\n9.Sunet\n10. ADD ALL SENSORS (Full Package)\n";
                 std::cout << "Choice: ";
                 int sOpt;
                 std::cin >> sOpt;
 
                 std::vector<int> sensorsToAdd;
 
-                if (sOpt == 9) {
-                    sensorsToAdd = {1, 2, 3, 4, 5, 6, 7, 8};
+                if (sOpt == 10) {
+                    sensorsToAdd = {1, 2, 3, 4, 5, 6, 7, 8, 9};
                     std::cout << "[INFO] Selected ALL sensors package.\n";
-                } else if (sOpt >= 1 && sOpt <= 8) {
+                } else if (sOpt >= 1 && sOpt <= 9) {
                     sensorsToAdd.push_back(sOpt);
                 } else {
                     std::cout << "Invalid selection.\n";
