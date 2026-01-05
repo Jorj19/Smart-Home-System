@@ -11,7 +11,7 @@ project(${MAIN_PROJECT_NAME})
 # set(CMAKE_PROJECT_VERSION_MINOR 0)
 # set(CMAKE_PROJECT_VERSION_PATCH 1)
 
-# --- MODIFICARE 1: Trecem la 20 pentru stabilitate SFML 3 ---
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -57,7 +57,6 @@ elseif(UNIX)
 endif()
 ###############################################################################
 
-# --- MODIFICARE 2: Am sters add_library pentru httplib. Il punem direct in executable mai jos. ---
 
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
@@ -81,14 +80,11 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         HomeyGUI.cpp
         HomeyGUI.h
 
-        # --- MODIFICARE 3: Compilam sursa httplib aici ---
         ext/lib/httplib.cc
 )
 
-# --- MODIFICARE 4: Am scos target_include_directories pentru targetul 'httplib' care nu mai exista ---
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ext/include)
 
-# --- MODIFICARE 5: Linkare corecta (am comasat librariile) ---
 target_link_libraries(${MAIN_EXECUTABLE_NAME}
         PRIVATE
         SFML::Graphics
