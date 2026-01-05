@@ -11,7 +11,8 @@ project(${MAIN_PROJECT_NAME})
 # set(CMAKE_PROJECT_VERSION_MINOR 0)
 # set(CMAKE_PROJECT_VERSION_PATCH 1)
 
-set(CMAKE_CXX_STANDARD 23)
+# --- MODIFICARE 1: Trecem la 20 pentru stabilitate SFML 3 ---
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -55,7 +56,8 @@ elseif(UNIX)
     find_package(X11)
 endif()
 ###############################################################################
-add_library(httplib ext/lib/httplib.cc)
+
+# --- MODIFICARE 2: Am sters add_library pentru httplib. Il punem direct in executable mai jos. ---
 
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
@@ -76,19 +78,28 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         ConfigManager.h
         HomeExceptions.cpp
         HomeExceptions.h
+        HomeyGUI.cpp
+        HomeyGUI.h
+
+        # --- MODIFICARE 3: Compilam sursa httplib aici ---
+        ext/lib/httplib.cc
 )
 
-target_include_directories(httplib SYSTEM PRIVATE ext/include)
+# --- MODIFICARE 4: Am scos target_include_directories pentru targetul 'httplib' care nu mai exista ---
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ext/include)
 
+# --- MODIFICARE 5: Linkare corecta (am comasat librariile) ---
 target_link_libraries(${MAIN_EXECUTABLE_NAME}
-        httplib
+        PRIVATE
+        SFML::Graphics
+        SFML::Window
+        SFML::System
+        Threads::Threads
+
+        # Linkare Httplib Dependencies
         $<$<PLATFORM_ID:Windows>:ws2_32>
         $<$<PLATFORM_ID:Windows>:crypt32>
 )
-
-target_link_directories(${MAIN_EXECUTABLE_NAME} PRIVATE ${SFML_BINARY_DIR}/lib)
-target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE SFML::Graphics SFML::Window SFML::System Threads::Threads)
 
 if(APPLE)
 elseif(UNIX)
@@ -97,7 +108,7 @@ endif()
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
-set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME} httplib)
+set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
 # set_compiler_flags(TARGET_NAMES ${MAIN_EXECUTABLE_NAME} ${FOO} ${BAR})
 # where ${FOO} and ${BAR} represent additional executables or libraries
 # you want to compile with the set compiler flags
