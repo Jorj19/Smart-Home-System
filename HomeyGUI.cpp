@@ -11,7 +11,6 @@
 #include <httplib.h>
 #include <cstdint>
 #include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
 
 // --- HELPER FUNCTIONS ---
 std::string toLowerUI(std::string str) {
@@ -110,7 +109,6 @@ HomeyGUI::HomeyGUI() : systemLogic("My Smart Home"), analysisEngine(systemLogic,
 void HomeyGUI::run() {
     while (window.isOpen()) {
         handleEvents();
-        update();
         render();
     }
 }
@@ -153,14 +151,6 @@ void HomeyGUI::handleEvents() {
     }
 }
 
-void HomeyGUI::update() const{
-    if (currentState == AppState::DASHBOARD_OVERVIEW || currentState == AppState::DASHBOARD_ROOM_DETAIL) {
-        // if (dataTimer.getElapsedTime().asSeconds() > updateInterval) {
-        //     updateSensors();
-        //     dataTimer.restart();
-        // }
-    }
-}
 
 void HomeyGUI::render() {
     window.clear(Theme::BG);
@@ -587,6 +577,7 @@ void HomeyGUI::drawAnalytics() {
     float startX = 290.f;
     float width = 1280.f - startX - 30.f;
 
+    // --- 1. CALCUL STATISTICI ---
     int totalRooms = static_cast<int>(systemLogic.getRoomList().size());
     int totalSensorsReal = 0;
 
@@ -596,7 +587,7 @@ void HomeyGUI::drawAnalytics() {
 
     // --- 2. ACTUALIZARE MOTOR ANALIZĂ ---
     int score = analysisEngine.calculateHealthScore();
-    std::string reportStr = analysisEngine.generateStatusReport(); // Generează textul raportului
+    std::string reportStr = analysisEngine.generateStatusReport();
     auto alerts = analysisEngine.generateAlerts();
     int activeAlertsCount = static_cast<int>(alerts.size());
 
@@ -604,14 +595,16 @@ void HomeyGUI::drawAnalytics() {
     sf::Text title(font, "SYSTEM DIAGNOSTICS & ANALYTICS", 32);
     title.setStyle(sf::Text::Bold);
     title.setFillColor(Theme::TEXT_MAIN);
-    title.setPosition({startX, 40});
+    // SFML 3 cere Vector2f explicit
+    title.setPosition(sf::Vector2f(startX, 40.f));
     window.draw(title);
 
     // --- 4. HEALTH SCORE CARD ---
     float cardY = 100.f;
     float scoreCardW = 350.f;
-    sf::RectangleShape scoreCard({scoreCardW, 220.f});
-    scoreCard.setPosition({startX, cardY});
+
+    sf::RectangleShape scoreCard(sf::Vector2f(scoreCardW, 220.f));
+    scoreCard.setPosition(sf::Vector2f(startX, cardY));
     scoreCard.setFillColor(Theme::CARD_BG);
     scoreCard.setOutlineThickness(1.5f);
 
@@ -624,27 +617,26 @@ void HomeyGUI::drawAnalytics() {
 
     sf::Text scoreLbl(font, "OVERALL HEALTH SCORE", 16);
     scoreLbl.setFillColor(Theme::TEXT_SEC);
-    scoreLbl.setPosition({startX + 25, cardY + 25});
+    scoreLbl.setPosition(sf::Vector2f(startX + 25.f, cardY + 25.f));
     window.draw(scoreLbl);
 
     sf::Text scoreVal(font, std::to_string(score), 90);
     scoreVal.setStyle(sf::Text::Bold);
     scoreVal.setFillColor(scoreColor);
     sf::FloatRect sb = scoreVal.getLocalBounds();
-    scoreVal.setOrigin({sb.size.x/2, sb.size.y/2});
-    scoreVal.setPosition({startX + scoreCardW/2, cardY + 120});
+    scoreVal.setOrigin(sf::Vector2f(sb.size.x/2.f, sb.size.y/2.f));
+    scoreVal.setPosition(sf::Vector2f(startX + scoreCardW/2.f, cardY + 120.f));
     window.draw(scoreVal);
 
     sf::Text scoreSuffix(font, "/ 100", 24);
     scoreSuffix.setFillColor(Theme::TEXT_SEC);
-    scoreSuffix.setPosition({startX + scoreCardW/2 + sb.size.x/2 + 10, cardY + 130});
+    scoreSuffix.setPosition(sf::Vector2f(startX + scoreCardW/2.f + sb.size.x/2.f + 10.f, cardY + 130.f));
     window.draw(scoreSuffix);
 
-    // --- 5. STATISTICI RAPIDE (FOLOSIM CIFRELE REALE) ---
     float statsX = startX + scoreCardW + 30.f;
     float statsW = width - scoreCardW - 30.f;
-    sf::RectangleShape statsCard({statsW, 220.f});
-    statsCard.setPosition({statsX, cardY});
+    sf::RectangleShape statsCard(sf::Vector2f(statsW, 220.f));
+    statsCard.setPosition(sf::Vector2f(statsX, cardY));
     statsCard.setFillColor(Theme::CARD_BG);
     statsCard.setOutlineColor(sf::Color(60,60,70));
     statsCard.setOutlineThickness(1.f);
@@ -652,19 +644,19 @@ void HomeyGUI::drawAnalytics() {
 
     sf::Text statsLbl(font, "SYSTEM STATISTICS", 16);
     statsLbl.setFillColor(Theme::TEXT_SEC);
-    statsLbl.setPosition({statsX + 25, cardY + 25});
+    statsLbl.setPosition(sf::Vector2f(statsX + 25.f, cardY + 25.f));
     window.draw(statsLbl);
 
     auto drawMiniStat = [&](float sx, float sy, const std::string& label, int val, sf::Color valColor) {
         sf::Text vText(font, std::to_string(val), 36);
         vText.setStyle(sf::Text::Bold);
         vText.setFillColor(valColor);
-        vText.setPosition({sx, sy});
+        vText.setPosition(sf::Vector2f(sx, sy));
         window.draw(vText);
 
         sf::Text lText(font, label, 14);
         lText.setFillColor(Theme::TEXT_SEC);
-        lText.setPosition({sx, sy + 45});
+        lText.setPosition(sf::Vector2f(sx, sy + 45.f));
         window.draw(lText);
     };
 
@@ -680,20 +672,15 @@ void HomeyGUI::drawAnalytics() {
 
     sf::Text reportLbl(font, "DETAILED STATUS REPORT & LOGS", 18);
     reportLbl.setFillColor(Theme::TEXT_MAIN);
-    reportLbl.setPosition({startX, reportY});
+    reportLbl.setPosition(sf::Vector2f(startX, reportY));
     window.draw(reportLbl);
 
-    sf::RectangleShape termBg({width, reportH});
-    termBg.setPosition({startX, reportY + 30});
+    sf::RectangleShape termBg(sf::Vector2f(width, reportH));
+    termBg.setPosition(sf::Vector2f(startX, reportY + 30.f));
     termBg.setFillColor(sf::Color(10, 10, 15));
     termBg.setOutlineColor(Theme::ACCENT);
     termBg.setOutlineThickness(1.f);
     window.draw(termBg);
-
-    // OpenGL Scissor pentru scroll
-    sf::Vector2u winSize = window.getSize();
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(static_cast<GLint>(startX), static_cast<GLint>(winSize.y - (reportY + 30.f + reportH)), static_cast<GLint>(width), static_cast<GLint>(reportH));
 
     std::string fullReportStr = reportStr;
     if (!alerts.empty()) {
@@ -706,14 +693,30 @@ void HomeyGUI::drawAnalytics() {
     sf::Text reportText(font, fullReportStr, 16);
     reportText.setFillColor(sf::Color(200, 220, 200));
     reportText.setLineSpacing(1.2f);
-    reportText.setPosition({startX + 20.f, reportY + 50.f - analyticsReportScrollY});
 
+    reportText.setPosition(sf::Vector2f(0.f, 0.f));
+
+    sf::View originalView = window.getView();
+
+    sf::Vector2u winSize = window.getSize();
+    float vpX = startX / static_cast<float>(winSize.x);
+    float vpY = (reportY + 30.f) / static_cast<float>(winSize.y);
+    float vpW = width / static_cast<float>(winSize.x);
+    float vpH = reportH / static_cast<float>(winSize.y);
+
+    sf::View scrollView;
+
+    scrollView.setSize(sf::Vector2f(width, reportH));
+
+    scrollView.setViewport(sf::FloatRect({vpX, vpY}, {vpW, vpH}));
+    scrollView.setCenter(sf::Vector2f(width / 2.f, reportH / 2.f + analyticsReportScrollY));
+
+    window.setView(scrollView);
     window.draw(reportText);
 
-    // Salvăm înălțimea pentru scroll
-    analyticsContentHeight = reportText.getLocalBounds().size.y;
+    window.setView(originalView);
 
-    glDisable(GL_SCISSOR_TEST);
+    analyticsContentHeight = reportText.getLocalBounds().size.y;
 }
 // --- BACKEND LOGIC INTEGRATION ---
 

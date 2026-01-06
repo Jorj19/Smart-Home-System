@@ -47,7 +47,6 @@ private:
     enum class AppState { SETUP, MENU, DASHBOARD_OVERVIEW, DASHBOARD_ROOM_DETAIL, ANALYTICS, EXIT };
 
     void handleEvents();
-    void update() const;
     void render();
     void drawAnalytics();
 
