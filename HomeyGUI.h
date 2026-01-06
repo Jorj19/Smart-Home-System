@@ -90,9 +90,6 @@ private:
     // Backend System
     std::string serverIp;
 
-    // Timers
-    sf::Clock dataTimer;
-    float updateInterval = 2.0f;
 
     // Buttons
     std::vector<Button> setupButtons;

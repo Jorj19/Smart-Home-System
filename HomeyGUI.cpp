@@ -97,9 +97,9 @@ HomeyGUI::HomeyGUI() : systemLogic("My Smart Home"), analysisEngine(systemLogic,
     // Menu Buttons
     menuButtons.clear();
     menuButtons.emplace_back(cx - 150, 250, 300, 50, "Run Demo System", font);          // Index 0
-    menuButtons.emplace_back(cx - 150, 320, 300, 50, "Create System (Interactive - console)", font); // Index 1
+    menuButtons.emplace_back(cx - 150, 320, 300, 50, "Create System (console)", font); // Index 1
     menuButtons.emplace_back(cx - 150, 390, 300, 50, "Load System From File", font);      // Index 2
-    menuButtons.emplace_back(cx - 150, 460, 300, 50, "Exit", font);
+    menuButtons.emplace_back(cx - 150, 460, 300, 50, "Exit to Desktop", font);
     // Sidebar Buttons
     sidebarButtons.emplace_back(0, 120, 250, 50, "  DASHBOARD", font, true);
     sidebarButtons.emplace_back(0, 170, 250, 50, "  ANALYTICS", font, true);
