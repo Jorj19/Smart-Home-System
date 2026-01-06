@@ -45,6 +45,7 @@ const std::string& Sensor::getUnit() const {
     return measurementUnit;
 }
 
+// cppcheck-suppress unusedFunction
 int Sensor::getTotalSensors() {
     return totalSensors;
 }

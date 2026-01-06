@@ -33,6 +33,7 @@ void Room::addSensor(const std::shared_ptr<Sensor>& s) {
     }
 }
 
+// cppcheck-suppress unusedFunction
 void Room::removeSensor(const std::shared_ptr<Sensor>& s) {
     if (s) {
         // Căutăm senzorul în listă comparând pointerii

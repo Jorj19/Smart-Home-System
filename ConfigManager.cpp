@@ -112,7 +112,7 @@ HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
 }
 
 
-
+// cppcheck-suppress unusedFunction
 bool ConfigManager::saveSystemToFile(const std::string& filename, const HomeSystem& system) {
     std::ofstream outFile(filename);
     if (!outFile.is_open()) {

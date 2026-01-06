@@ -15,6 +15,7 @@ void HomeSystem::addRoom(const Room& r) {
     this->roomList.push_back(r);
 }
 
+// cppcheck-suppress unusedFunction
 void HomeSystem::removeRoom(const Room& r) {
     const std::string& nameToDelete = r.getName();
 

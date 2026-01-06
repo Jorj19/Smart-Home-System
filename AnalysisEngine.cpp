@@ -224,6 +224,7 @@ std::vector<Alert> AnalysisEngine::generateAlerts() const {
     return foundAlerts;
 }
 
+// cppcheck-suppress unusedFunction
 std::string AnalysisEngine::generateStatusReport() const {
     std::stringstream ss;
     ss << "===== SYSTEM STATUS REPORT (" << system.getSystemName() << ") =====\n";
@@ -275,6 +276,7 @@ std::string AnalysisEngine::generateStatusReport() const {
     return ss.str();
 }
 
+// cppcheck-suppress unusedFunction
 int AnalysisEngine::calculateHealthScore() const {
     int score = 100;
 
