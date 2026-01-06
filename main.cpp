@@ -1,3 +1,4 @@
+/*
 #include <iostream>
 #include <string>
 #include <vector>
@@ -563,4 +564,16 @@ void clearInputBuffer() {
         std::cin.clear();
     }
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+
+*/
+
+#include "HomeyGUI.h"
+
+int main() {
+    HomeyGUI app;
+    app.run();
+
+    return 0;
 }

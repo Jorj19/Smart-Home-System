@@ -3,7 +3,6 @@
 
 #include "Room.h"
 #include <string>
-#include <iostream>
 #include <vector>
 
 class HomeSystem {
@@ -15,6 +14,8 @@ public:
     explicit HomeSystem(std::string name);
 
     void addRoom(const Room& r);
+
+    void removeRoom(const Room& r);
 
     Room* findRoomByName(const std::string& name);
 

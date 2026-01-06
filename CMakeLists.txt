@@ -79,7 +79,6 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         HomeExceptions.h
         HomeyGUI.cpp
         HomeyGUI.h
-
         ext/lib/httplib.cc
 )
 

@@ -2,7 +2,6 @@
 #define ROOM_H
 
 #include "Sensor.h"
-#include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -26,6 +25,8 @@ public:
     friend void swap(Room& first, Room& second) noexcept;
 
     void addSensor(const std::shared_ptr<Sensor>& s);
+
+    void removeSensor(const std::shared_ptr<Sensor>& s);
 
     [[nodiscard]] double calculateSensorAverage(const std::string& sensorType) const;
 

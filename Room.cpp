@@ -3,6 +3,7 @@
 #include <iostream>
 #include <utility>
 #include <cstddef>
+#include <algorithm>
 Room::Room() : roomName("N/A") {}
 
 Room::Room(std::string name) : roomName(std::move(name)) {}
@@ -29,6 +30,21 @@ void swap(Room& a, Room& b) noexcept {
 void Room::addSensor(const std::shared_ptr<Sensor>& s) {
     if(s) {
         this->sensorList.push_back(s);
+    }
+}
+
+void Room::removeSensor(const std::shared_ptr<Sensor>& s) {
+    if (s) {
+        // Căutăm senzorul în listă comparând pointerii
+        auto [first, last] = std::ranges::remove_if(this->sensorList,
+            [&s](const std::shared_ptr<Sensor>& existingSensor) {
+                return existingSensor == s;
+            });
+
+        // Dacă a fost găsit, îl ștergem din vector
+        if (first != this->sensorList.end()) {
+            this->sensorList.erase(first, last);
+        }
     }
 }
 

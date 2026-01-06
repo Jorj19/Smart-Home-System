@@ -1,6 +1,7 @@
 #include "HomeSystem.h"
 #include "HomeExceptions.h"
 #include <utility>
+#include <algorithm>
 
 HomeSystem::HomeSystem(std::string name) : systemName(std::move(name)) {
 
@@ -12,6 +13,21 @@ void HomeSystem::addRoom(const Room& r) {
     }
 
     this->roomList.push_back(r);
+}
+
+void HomeSystem::removeRoom(const Room& r) {
+    const std::string& nameToDelete = r.getName();
+
+    auto [first, last] = std::ranges::remove_if(roomList,
+        [&nameToDelete](const Room& currentRoom) {
+            return currentRoom.getName() == nameToDelete;
+        });
+
+    if (first != roomList.end()) {
+        roomList.erase(first, last);
+    } else {
+        throw RoomNotFoundException(nameToDelete);
+    }
 }
 
 Room* HomeSystem::findRoomByName(const std::string& name) {
@@ -54,3 +70,4 @@ std::ostream& operator<<(std::ostream& os, const HomeSystem& hs) {
     }
     return os;
 }
+
