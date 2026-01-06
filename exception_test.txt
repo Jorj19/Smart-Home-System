@@ -1,0 +1,22 @@
+# --- Testare Robustete Sistem ---
+
+# 1. Camera valida
+ROOM,Living
+
+# 2. Senzor valid
+SENSOR,Living,Temperatura,22.0,C
+
+# 3. TEST EROARE: Senzor adaugat intr-o camera care NU exista
+# Ar trebui sa declanseze RoomNotFoundException
+SENSOR,Baie,Umiditate,80.0,%
+
+# 4. TEST EROARE: Format gresit (lipseste unitatea)
+# Ar trebui sa fie ignorat sau sa dea eroare de parsare
+SENSOR,Living,Lumina,500
+
+# 5. TEST EROARE: Valoare non-numerica
+# Ar trebui sa declanseze InvalidDataSensorException (std::stod fail)
+SENSOR,Living,CO2,MultePPM,ppm
+
+# 6. Un alt senzor valid (acesta ar trebui sa se incarce chiar daca liniile 3,4,5 esueaza)
+SENSOR,Living,Sunet,40.0,dB

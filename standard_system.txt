@@ -1,0 +1,29 @@
+# --- Configurare Casa Standard ---
+# Definire Camere
+ROOM,Living Room
+ROOM,Bucatarie
+ROOM,Dormitor Matrimonial
+ROOM,Garaj
+
+# --- Senzori Living ---
+SENSOR,Living Room,Temperatura,22.5,C
+SENSOR,Living Room,Umiditate,45.0,%
+SENSOR,Living Room,Lumina,450.0,lux
+SENSOR,Living Room,CO2,410.0,ppm
+SENSOR,Living Room,TVOC,15.0,ppb
+
+# --- Senzori Bucatarie ---
+SENSOR,Bucatarie,Temperatura,24.0,C
+SENSOR,Bucatarie,Umiditate,60.0,%
+SENSOR,Bucatarie,Fum,0.0,bool
+SENSOR,Bucatarie,CO,5.0,ppm
+SENSOR,Bucatarie,PM2.5,12.0,ug/m3
+
+# --- Senzori Dormitor ---
+SENSOR,Dormitor Matrimonial,Temperatura,19.5,C
+SENSOR,Dormitor Matrimonial,Sunet,30.0,dB
+SENSOR,Dormitor Matrimonial,Umiditate,50.0,%
+
+# --- Senzori Garaj ---
+SENSOR,Garaj,Temperatura,12.0,C
+SENSOR,Garaj,CO,0.0,ppm

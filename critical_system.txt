@@ -1,0 +1,20 @@
+# --- Configurare Scenariu Urgenta ---
+ROOM,Camera Tehnica
+ROOM,Laborator
+ROOM,Pod
+
+# --- Camera Tehnica (Incendiu simulat) ---
+# Temperatura mare si Fum detectat -> Ar trebui sa fie CRITICAL (Rosu)
+SENSOR,Camera Tehnica,Temperatura,65.0,C
+SENSOR,Camera Tehnica,Fum,1.0,bool
+SENSOR,Camera Tehnica,CO,150.0,ppm
+
+# --- Laborator (Poluare chimica) ---
+# TVOC si CO2 foarte mari -> WARNING sau CRITICAL
+SENSOR,Laborator,TVOC,500.0,ppb
+SENSOR,Laborator,CO2,2500.0,ppm
+SENSOR,Laborator,Umiditate,30.0,%
+
+# --- Pod (Senzori defecti sau valori extreme) ---
+SENSOR,Pod,Temperatura,-10.0,C
+SENSOR,Pod,Umiditate,99.9,%
