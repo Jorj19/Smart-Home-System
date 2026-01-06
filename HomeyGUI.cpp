@@ -192,7 +192,8 @@ void HomeyGUI::drawSetup() {
     if (setupButtons[0].update(mouse, click)) { serverIp = "127.0.0.1"; currentState = AppState::MENU; sf::sleep(sf::milliseconds(200)); }
     setupButtons[0].draw(window);
 
-    if (setupButtons[1].update(mouse, click)) { serverIp = "192.168.100.112"; currentState = AppState::MENU; sf::sleep(sf::milliseconds(200)); }
+    //ip raspberry pi
+    if (setupButtons[1].update(mouse, click)) { serverIp = "192.168.1.140"; currentState = AppState::MENU; sf::sleep(sf::milliseconds(200)); }
     setupButtons[1].draw(window);
 }
 

@@ -33,6 +33,14 @@ Aici intervine diferențierea. Sistemul nu așteaptă comenzi, ci înțelege și
 * **Fereastra Deschisă:** Dacă $\text{AC}$-ul merge si Senzorul de Contact arată că ai deschis geamul, sistemul te avertizează imediat și sugerează oprirea climatizării pentru a evita risipa.
 * **Risc de Mucegai:** Dacă Umiditatea este periculos de mare (peste $70%$) timp de o zi, sistemul te alarmează asupra riscului de mucegai și activează dezumidificatorul.
 
+## 📦 Inițializare Dependențe (Obligatoriu)
+
+După clonarea proiectului, este necesar să inițializezi submodulele pentru a descărca biblioteca de rețea (`httplib`):
+
+```bash
+git submodule init
+git submodule update
+```
 ---
 
 
