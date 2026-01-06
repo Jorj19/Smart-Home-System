@@ -18,6 +18,7 @@ static std::string toLower(std::string str) {
     return str;
 }
 
+// cppcheck-suppress unusedFunction
 HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
     std::cout << "Loading system from " << filename << std::endl;
 
