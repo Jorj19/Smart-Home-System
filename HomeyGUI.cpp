@@ -1,6 +1,7 @@
 #include "HomeyGUI.h"
 #include "ConfigManager.h"
 #include "HomeExceptions.h"
+#include "Extensions.h"
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -798,7 +799,6 @@ void HomeyGUI::runInteractiveConsoleSetup() {
     // 2. Setare Nume Sistem
     std::string sysName;
     std::cout << "Enter new system name: ";
-    clearInputBufferUI();
     std::getline(std::cin, sysName);
 
     // Re-inițializăm sistemul din GUI cu numele nou
@@ -836,6 +836,15 @@ void HomeyGUI::runInteractiveConsoleSetup() {
                 break;
             }
             case 2: {
+                const auto& rooms = systemLogic.getRoomList();
+                if (rooms.empty()) {
+                    std::cout << "[!] There are no rooms. Create one first!\n";
+                    break;
+                }
+
+                std::cout << "\n--- Available Rooms ---\n";
+                for (const auto& r : rooms) std::cout << " -> " << r.getName() << "\n";
+
                 std::string roomName;
                 std::cout << "Enter room name to add sensor to: ";
                 clearInputBufferUI();
@@ -856,11 +865,10 @@ void HomeyGUI::runInteractiveConsoleSetup() {
                 std::vector<int> sensorsToAdd;
                 if (sOpt == 10) {
                     sensorsToAdd = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-                    std::cout << "[INFO] Selected ALL sensors package.\n";
                 } else if (sOpt >= 1 && sOpt <= 9) {
                     sensorsToAdd.push_back(sOpt);
                 } else {
-                    std::cout << "Invalid selection.\n";
+                    std::cout << "[!] Invalid selection.\n";
                     break;
                 }
 
@@ -921,29 +929,17 @@ void HomeyGUI::runInteractiveConsoleSetup() {
                     }
 
                     if (!found) {
-                        Sensor* newSensor = nullptr;
                         try {
-                            switch(sensorIndex) {
-                                case 1: newSensor = new temperatureSensor(val); break;
-                                case 2: newSensor = new humiditySensor(val); break;
-                                case 3: newSensor = new lightSensor(val); break;
-                                case 4: newSensor = new toxicGasSensor("CO2", val, "ppm"); break;
-                                case 5: newSensor = new particleSensor(val); break;
-                                case 6: newSensor = new smokeSensor(val); break;
-                                case 7: newSensor = new toxicGasSensor("TVOC", val, "ppb"); break;
-                                case 8: newSensor = new toxicGasSensor("CO", val, "ppm"); break;
-                                case 9: newSensor = new soundSensor(val); break;
-                                default: std::cerr << "[WARNING] Unknown sensor index: " << sensorIndex << ". Skipping.\n"; break;
-                            }
-                        } catch (...) {
-                            std::cout << "[ERROR] Error creating " << type << "\n";
-                            delete newSensor;
-                            continue;
-                        }
+                            auto newSensor = sensorFactory::createSensor(sensorIndex, val);
 
-                        if (newSensor != nullptr) {
-                            room->addSensor(std::shared_ptr<Sensor>(newSensor));
-                            std::cout << "[SUCCESS] Added " << type << ": " << val << "\n";
+                            if (newSensor != nullptr) {
+                                room->addSensor(newSensor);
+                                std::cout << "[SUCCESS] Added " << type << ": " << val << "\n";
+                            } else {
+                                std::cout << "[ERROR] Factory failed to create sensor index: " << sensorIndex << "\n";
+                            }
+                        } catch (const std::exception& e) {
+                            std::cout << "[ERROR] Exception creating " << type << ": " << e.what() << "\n";
                         }
                     }
                 }
@@ -1069,30 +1065,31 @@ void HomeyGUI::runSystemManagerConsole() {
                 case 3: { // ADD / UPDATE SENSOR
                     const auto& rooms = systemLogic.getRoomList();
                     if (rooms.empty()) {
-                        std::cout << "[!] Nu exista camere. Creeaza una mai intai!\n";
+                        std::cout << "[!] There are no rooms. Create one first!\n";
                         break;
                     }
 
-                    std::cout << "\n--- Camere Disponibile ---\n";
+                    std::cout << "\n--- Available Rooms ---\n";
                     for (const auto& r : rooms) std::cout << " -> " << r.getName() << "\n";
 
-                    std::cout << "Selecteaza camera: ";
+                    std::cout << "Enter room name to add sensor to: ";
                     std::string rName; clearInputBufferUI(); std::getline(std::cin, rName);
                     Room* room = systemLogic.findRoomByName(rName);
                     if (!room) {
                         throw RoomNotFoundException(rName);
                     }
 
-                    std::cout << "\n[1.Temp | 2.Hum | 3.Light | 4.CO2 | 5.PM2.5 | 6.Smoke | 7.TVOC | 8.CO | 9.Sound | 10.ALL]\n";
-                    std::cout << "Optiune: ";
+                    std::cout << "Select sensor type:\n";
+                    std::cout << "1. Temperatura\n2. Umiditate\n3. Lumina\n4. CO2\n5. PM2.5\n6. Fum\n7. TVOC\n8. CO\n9. Sunet\n10. ADD ALL SENSORS (Full Package)\n";
+                    std::cout << "Choice: ";
                     int sOpt; std::cin >> sOpt;
 
                     std::vector<int> toProcess;
                     if (sOpt == 10) toProcess = {1,2,3,4,5,6,7,8,9};
                     else if (sOpt >= 1 && sOpt <= 9) toProcess.push_back(sOpt);
-                    else { std::cout << "[!] Optiune invalida.\n"; break; }
+                    else { std::cout << "[!] Invalid selection.\n"; break; }
 
-                    std::cout << "Sursa date: 1.Manual | 2.Live: ";
+                    std::cout << "\nData Source:\n1. Manual Input\n2. Live from Server (" << serverIp << ")\nChoice: ";
                     int src; std::cin >> src;
 
                     for (int idx : toProcess) {
@@ -1111,7 +1108,7 @@ void HomeyGUI::runSystemManagerConsole() {
                         if (src == 2) {
                             val = getLiveValueFromPi(type);
                         } else {
-                            std::cout << "Valoare pentru " << type << ": ";
+                            std::cout << "Enter value for " << type << ": ";
                             std::cin >> val;
                         }
 
@@ -1128,26 +1125,15 @@ void HomeyGUI::runSystemManagerConsole() {
 
                         // Daca nu exista, il cream si il adaugam (ADD)
                         if (!updated) {
-                            Sensor* newS = nullptr;
-                            if(idx==1) newS = new temperatureSensor(val);
-                            else if(idx==2) newS = new humiditySensor(val);
-                            else if(idx==3) newS = new lightSensor(val);
-                            else if(idx==4) newS = new toxicGasSensor("CO2", val, "ppm");
-                            else if(idx==5) newS = new particleSensor(val);
-                            else if(idx==6) newS = new smokeSensor(val);
-                            else if(idx==7) newS = new toxicGasSensor("TVOC", val, "ppb");
-                            else if(idx==8) newS = new toxicGasSensor("CO", val, "ppm");
-                            else if(idx==9) newS = new soundSensor(val);
-
-                            if (newS) {
+                            if (auto newS = sensorFactory::createSensor(idx, val)) {
                                 room->addSensor(std::shared_ptr<Sensor>(newS));
-                                std::cout << "[ADD] " << type << " a fost adaugat.\n";
+                                std::cout << "[ADD] " << type << " added.\n";
                             } else {
-                                std::cout << "[!] Eroare la crearea senzorului " << type << "\n";
+                                std::cout << "[!] Failed to create sensor index: " << type << "\n";
                             }
                         }
                     }
-                    std::cout << "\n[GATA] Procesare finalizata pentru " << rName << ".\n";
+                    std::cout << "\n[DONE] Finished adding sensors to " << rName << ".\n";
                     break;
                     }
 

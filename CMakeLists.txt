@@ -80,6 +80,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         HomeyGUI.cpp
         HomeyGUI.h
         ext/lib/httplib.cc
+        Extensions.cpp
+        Extensions.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ext/include)

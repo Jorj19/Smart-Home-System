@@ -4,19 +4,13 @@
 
 #include "ConfigManager.h"
 #include "HomeExceptions.h"
+#include "Extensions.h"
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include <memory>
 #include <algorithm>
 #include <cctype>
 
-static std::string toLower(std::string str) {
-    std::ranges::transform(str.begin(), str.end(), str.begin(),
-        [](unsigned char c) {return std::tolower(c); });
-
-    return str;
-}
 
 // cppcheck-suppress unusedFunction
 HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
@@ -55,45 +49,14 @@ HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
                 std::cout << "Loaded Room: " << parts[1] << "\n";
 
             } else if (type == "SENSOR" && parts.size() == 5) {
-                if (Room* room = loadedSystem.findRoomByName(parts[1]); room){
-                    const std::string& sensorType = parts[2];
+                if (Room* room = loadedSystem.findRoomByName(parts[1])) {
+                    std::string sensorTypeStr = parts[2];
                     double sensorValue = std::stod(parts[3]);
-                    std::string sensorUnits = parts[4];
 
-                    std::string sensorTypeLower = toLower(sensorType);
-
-                    std::shared_ptr<Sensor> newSensor = nullptr;
-
-                    if (sensorTypeLower == "temperatura") {
-                        newSensor = std::make_shared<temperatureSensor>(sensorValue);
-                    }
-                    else if (sensorTypeLower == "umiditate") {
-                        newSensor = std::make_shared<humiditySensor>(sensorValue);
-                    }
-                    else if (sensorTypeLower == "fum") {
-                        newSensor = std::make_shared<smokeSensor>(sensorValue);
-                    }
-                    else if (sensorTypeLower == "lumina") {
-                        newSensor = std::make_shared<lightSensor>(sensorValue);
-                    }
-                    else if (sensorTypeLower == "pm2.5" || sensorTypeLower == "pm25") {
-                        newSensor = std::make_shared<particleSensor>(sensorValue);
-                    }
-                    else if (sensorTypeLower == "co") {
-                        newSensor = std::make_shared<toxicGasSensor>("CO", sensorValue, sensorUnits);
-                    }
-                    else if (sensorTypeLower == "co2") {
-                        newSensor = std::make_shared<toxicGasSensor>("CO2", sensorValue, sensorUnits);
-                    }
-                    else if (sensorTypeLower == "tvoc") {
-                        newSensor = std::make_shared<toxicGasSensor>("TVOC", sensorValue, sensorUnits);
-                    }
-                    else {
-                        std::cout << "Warning: Unknown sensor type '" << sensorType << "'\n";
-                    }
-
-                    if (newSensor) {
-                     room->addSensor(newSensor);
+                    if (auto newSensor = sensorFactory::createSensorFromString(sensorTypeStr, sensorValue)) {
+                        room->addSensor(newSensor);
+                    } else {
+                        std::cout << "Warning (L" << lineCount << "): Unknown sensor type '" << sensorTypeStr << "'\n";
                     }
                 } else {
                     throw RoomNotFoundException(parts[1]);
