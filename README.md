@@ -1,10 +1,10 @@
-# 👋 Salut! Eu sunt **The Homey** – Asistentul Tău Personal
+#  Salut! Eu sunt **The Homey** – Asistentul Tău Personal
 
 Sunt un sistem inteligent conceput cu misiunea de a transforma locuința într-un ecosistem viu. Sistemul se bazează pe capacitatea sa de a învăța din obiceiurile utilizatorului și de a acționa proactiv și inteligent, adesea înainte ca nevoia sau problema să devină conștientă.
 
 ---
 
-## 🧠 Cum "Văd" și "Simt" Casa Ta
+##  Cum "Văd" și "Simt" Casa Ta
 
 Sistemul se bazează pe o rețea extinsă de senzori avansați (ochi, urechi și simțuri) pentru a avea o imagine de ansamblu completă a mediului tău:
 
@@ -15,7 +15,7 @@ Sistemul se bazează pe o rețea extinsă de senzori avansați (ochi, urechi și
 
 ---
 
-## 💡 Inteligența Mea: Funcții Proactive și Predictive
+##  Inteligența Mea: Funcții Proactive și Predictive
 
 Aici intervine diferențierea. Sistemul nu așteaptă comenzi, ci înțelege și anticipează nevoile tale:
 
@@ -33,7 +33,7 @@ Aici intervine diferențierea. Sistemul nu așteaptă comenzi, ci înțelege și
 * **Fereastra Deschisă:** Dacă $\text{AC}$-ul merge si Senzorul de Contact arată că ai deschis geamul, sistemul te avertizează imediat și sugerează oprirea climatizării pentru a evita risipa.
 * **Risc de Mucegai:** Dacă Umiditatea este periculos de mare (peste $70%$) timp de o zi, sistemul te alarmează asupra riscului de mucegai și activează dezumidificatorul.
 
-## 📦 Inițializare Dependențe (Obligatoriu)
+##  Inițializare Dependențe (Obligatoriu)
 
 După clonarea proiectului, este necesar să inițializezi submodulele pentru a descărca biblioteca de rețea (`httplib`):
 
@@ -42,6 +42,29 @@ git submodule init
 git submodule update
 ```
 ---
+
+
+
+## Hardware Components
+
+- **Raspberry Pi 4 model B**
+- **DHT22** – temperature & humidity
+- **BH1750** – light intensity (lux)
+- **MQ-135** – air quality / CO₂ estimation
+- **MQ-5** – gas (LPG, methane)
+- **MQ-7** – carbon monoxide (CO)
+- **MCP3008** – ADC for MQ sensors
+
+---
+## Hardware Setup
+
+<img width="auto" height="600" alt="image" src="https://github.com/user-attachments/assets/c94b1f84-e062-4232-99fd-8c92f138953c" />
+
+<img width="auto" height="600" alt="image" src="https://github.com/user-attachments/assets/6cf28b06-0c6a-431b-a136-42ed1e972cc8" />
+
+
+<img width="auto" height="600" alt="image" src="https://github.com/user-attachments/assets/08adfb8f-638c-4259-9051-0cdf9bd8b307" />
+
 
 
 ### Folosiți template-ul corespunzător grupei voastre!
