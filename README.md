@@ -29,15 +29,15 @@ git submodule update
 ```
 
 
-## Hardware Components
+## Componente Hardware 
 
 - **Raspberry Pi 4 model B**
-- **DHT22** – temperature & humidity
-- **BH1750** – light intensity (lux)
-- **MQ-135** – air quality / CO₂ estimation
-- **MQ-5** – gas (LPG, methane)
-- **MQ-7** – carbon monoxide (CO)
-- **MCP3008** – ADC for MQ sensors
+- **DHT22** – temperatura & umiditate
+- **BH1750** – intensitate lumina (lux)
+- **MQ-135** – Calitatea aerului / CO₂ 
+- **MQ-5** – gaze
+- **MQ-7** – monoxid de carbon (CO)
+- **MCP3008** – ADC pentru senzorii MQ
 
 ---
 ## Hardware Setup
