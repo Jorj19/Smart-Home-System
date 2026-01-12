@@ -1,48 +1,32 @@
-#  Salut! Eu sunt **The Homey** – Asistentul Tău Personal
+# The Homey – Smart Home Monitoring System
 
-Sunt un sistem inteligent conceput cu misiunea de a transforma locuința într-un ecosistem viu. Sistemul se bazează pe capacitatea sa de a învăța din obiceiurile utilizatorului și de a acționa proactiv și inteligent, adesea înainte ca nevoia sau problema să devină conștientă.
+## Descriere
+The Homey este un sistem de monitorizare a locuinței bazat pe Raspberry Pi, care colectează date de la senzori de mediu și securitate și generează alerte sau recomandări automate pe baza acestora.
 
----
+Sistemul monitorizează parametri precum temperatura, umiditatea, calitatea aerului, nivelul de zgomot, lumina și prezența gazelor periculoase.
 
-##  Cum "Văd" și "Simt" Casa Ta
+## Funcționalități
+- Monitorizarea temperaturii și umidității
+- Estimarea calității aerului (CO₂)
+- Detectarea fumului și a monoxidului de carbon
+- Monitorizarea nivelului de zgomot
+- Monitorizarea intensității luminii
+- Generarea alertelor pentru situații critice
+- Optimizarea consumului energetic
+- Detectarea situațiilor de risc (ex: geam deschis cu AC pornit, umiditate ridicată)
 
-Sistemul se bazează pe o rețea extinsă de senzori avansați (ochi, urechi și simțuri) pentru a avea o imagine de ansamblu completă a mediului tău:
+## Moduri de operare
+- **Mod Petrecere**: creșterea intensității luminii, reducerea temperaturii și dezactivarea temporară a alertelor de zgomot
+- **Mod Plecat**: reducerea climatizării și activarea sistemului de securitate
 
-* **Sănătatea Ta:** Măsor nivelul de $\text{CO}_2$ și Particule Fine ($\text{PM 2.5/10}$) pentru a evalua cât de proaspăt și curat este aerul. Dacă aerul devine "obositor" (prea mult $\text{CO}_2$), sistemul sugerează o pauză sau sugerează activarea ventilației. Corelez datele de Umiditate cu Temperatura pentru a oferi cel mai bun confort termic perceput.
-* **Protecția Ta:** Senzorii mei de Fum și Monoxid de Carbon (CO) sunt vigilenți 24/7. Dacă detectez un pericol critic, sistemul trimite imediat o alertă de urgență, blocând alte operațiuni, pentru a asigura reacția rapidă.
-* **Alertele Silențioase:** Senzorul de Decibeli ajută la ascultarea casei. Nu doar zgomotul, ci și frecvența sunetului: dacă detectează o frecvență specifică și înaltă (cum ar fi spargerea unui geam), activez alerta de securitate.
-* **Paza Luminii:** Măsor intensitatea Luminilor UV din interior. Dacă razele devin prea puternice, sistemul sugerează inchiderea jaluzelelor pentru a proteja mobila și plantele de deteriorare.
+## Dependențe
+Proiectul utilizează biblioteca **httplib** ca submodul Git.
 
----
-
-##  Inteligența Mea: Funcții Proactive și Predictive
-
-Aici intervine diferențierea. Sistemul nu așteaptă comenzi, ci înțelege și anticipează nevoile tale:
-
-### 1. Optimizarea Confortului Tău
-
-* **Moduri de Viață:** La activarea Modului "Petrecere", sistemul setează luminile la intensitate maximă, temperatura un pic mai jos, și ignoră alertele de zgomot pentru câteva ore. La activarea Modului "Plecat", sistemul reduce AC-ul la temperatura de rezervă și activează securitatea.
-
-### 2. Auditul Tău Energetic (Economie)
-
-* **Identific "Vampirii" de Energie:** Sistemul analizează datele de la Senzorii de Consum Individual. Dacă observă că televizorul tău consumă $6\text{W}$ în standby, noaptea, calculează costul irosit și recomandă să folosești o priză inteligentă pentru a opri complet "vampirul".
-* **Anticiparea Climatică:** Folosind date GPS simulate (locația ta), sistemul poate începe pre-răcirea sau pre-încălzirea casei exact la momentul potrivit, astfel încât să intri direct într-un mediu perfect.
-
-### 3. Logica de Corelație Avansată
-
-* **Fereastra Deschisă:** Dacă $\text{AC}$-ul merge si Senzorul de Contact arată că ai deschis geamul, sistemul te avertizează imediat și sugerează oprirea climatizării pentru a evita risipa.
-* **Risc de Mucegai:** Dacă Umiditatea este periculos de mare (peste $70%$) timp de o zi, sistemul te alarmează asupra riscului de mucegai și activează dezumidificatorul.
-
-##  Inițializare Dependențe (Obligatoriu)
-
-După clonarea proiectului, este necesar să inițializezi submodulele pentru a descărca biblioteca de rețea (`httplib`):
-
+Inițializarea submodulelor:
 ```bash
 git submodule init
 git submodule update
 ```
----
-
 
 
 ## Hardware Components
