@@ -12,6 +12,7 @@
 
 // cppcheck-suppress unusedFunction
 template <typename T>
+// cppcheck-suppress unusedFunction
 T clampValue(T value, T min, T max) {
     if (value < min) return min;
     if (value > max) return max;
