@@ -2,6 +2,7 @@
 #include "ConfigManager.h"
 #include "HomeExceptions.h"
 #include "Extensions.h"
+#include "Logger.h"
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -123,26 +124,25 @@ void HomeyGUI::handleEvents() {
                 float scrollSpeed = 30.f;
                 analyticsReportScrollY -= scroll->delta * scrollSpeed;
 
-                // Limitare (Clamping) să nu treacă de sus sau jos
                 if (analyticsReportScrollY < 0.f) analyticsReportScrollY = 0.f;
 
-                // Calculăm cât spațiu vizibil avem pt text (aprox 400px înălțime cutie)
                 float visibleHeight = 400.f;
-                float maxScroll = std::max(0.f, analyticsContentHeight - visibleHeight + 50.f); // +50 padding jos
-                if (analyticsReportScrollY > maxScroll) analyticsReportScrollY = maxScroll;
+                float maxScroll = std::max(0.f, analyticsContentHeight - visibleHeight + 50.f);
+                analyticsReportScrollY = clampValue<float>(analyticsReportScrollY, 0.f, maxScroll);
+
+                scrollHistory.add(analyticsReportScrollY);
             }
         }
 
         else if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
             if (key->code == sf::Keyboard::Key::Escape) {
-                // Logică de Back extinsă
                 if (currentState == AppState::DASHBOARD_ROOM_DETAIL) {
                     currentState = AppState::DASHBOARD_OVERVIEW;
                     selectedRoomIndex = -1;
                 }
                 else if (currentState == AppState::ANALYTICS) {
-                    currentState = AppState::DASHBOARD_OVERVIEW; // Back to Home
-                    analyticsReportScrollY = 0.0f; // Reset scroll
+                    currentState = AppState::DASHBOARD_OVERVIEW;
+                    analyticsReportScrollY = 0.0f;
                 }
                 else if (currentState == AppState::DASHBOARD_OVERVIEW) currentState = AppState::MENU;
                 else if (currentState == AppState::MENU) currentState = AppState::SETUP;
@@ -723,7 +723,7 @@ void HomeyGUI::drawAnalytics() {
 // --- BACKEND LOGIC INTEGRATION ---
 
 void HomeyGUI::initDemoSystem() {
-    std::cout << "[GUI] Initializing Demo System...\n";
+    Logger::getInstance().log("[GUI] Initializing Demo System...\n");
     systemLogic = HomeSystem("Demo Smart Home");
 
     double baseTemp = getLiveValueFromPi("Temperatura");
@@ -736,7 +736,7 @@ void HomeyGUI::initDemoSystem() {
     double baseCO = getLiveValueFromPi("CO");
     double baseSunet = getLiveValueFromPi("Sunet");
 
-    std::cout << "[INIT] Data fetched. Building rooms...\n";
+    Logger::getInstance().log("[INIT] Data fetched. Building rooms...\n");
 
     HomeSystem home("The Homey (Live Demo)");
 
@@ -789,22 +789,20 @@ void HomeyGUI::initDemoSystem() {
 }
 
 void HomeyGUI::runInteractiveConsoleSetup() {
-    // 1. Ascundem fereastra grafică pentru a ne concentra pe consolă
     window.setVisible(false);
+
+    Logger::getInstance().log("Entering Interactive Console Mode");
 
     std::cout << "\n========================================\n";
     std::cout << "   INTERACTIVE CONSOLE SETUP MODE\n";
     std::cout << "========================================\n";
 
-    // 2. Setare Nume Sistem
     std::string sysName;
     std::cout << "Enter new system name: ";
     std::getline(std::cin, sysName);
 
-    // Re-inițializăm sistemul din GUI cu numele nou
     systemLogic = HomeSystem(sysName);
 
-    // Motor de analiză temporar pentru afișarea în consolă
     AnalysisEngine consoleEngine(systemLogic, "rules.txt");
 
     bool running = true;
@@ -823,6 +821,8 @@ void HomeyGUI::runInteractiveConsoleSetup() {
             clearInputBufferUI();
             continue;
         }
+
+        commandHistory.add("User selected option: " + std::to_string(option));
 
         try {
             switch(option) {
@@ -990,6 +990,11 @@ void HomeyGUI::runInteractiveConsoleSetup() {
         }
     }
 
+    std::cout << "\n[HISTORY] Last actions:\n";
+    for(const auto& cmd : commandHistory.getData()) {
+        std::cout << " -> " << cmd << "\n";
+    }
+
     std::cout << "\nExiting Console Setup... Returning to Dashboard.\n";
 
     window.setVisible(true);
@@ -1015,9 +1020,10 @@ void HomeyGUI::loadSystemFromFileUI() {
 
     try {
         systemLogic = ConfigManager::loadSystemFromFile(fname);
-        std::cout << "[OK] System loaded successfully.\n";
+        Logger::getInstance().log("[FILE] System loaded successfully from: " + fname);
+
     } catch (const std::exception& e) {
-        std::cout << "[ERROR] " << e.what() << "\n";
+        Logger::getInstance().error("[FILE ERROR] " + std::string(e.what()));
         sf::sleep(sf::milliseconds(2000));
     }
     window.setVisible(true);
@@ -1037,6 +1043,11 @@ void HomeyGUI::runSystemManagerConsole() {
 
         int option;
         if (!(std::cin >> option)) { clearInputBufferUI(); continue; }
+
+        if (option != 0) {
+            commandHistory.add("ADMIN Action: Selected option " + std::to_string(option));
+        }
+
         if (option == 0) break;
 
         try {
@@ -1238,13 +1249,14 @@ double HomeyGUI::getLiveValueFromPi(const std::string& sensorType) const{
         try {
             return extractNestedValue(res->body, jsonKey);
         } catch (const InvalidDataSensorException& e) {
-            std::cerr << "[Network Error] " << e.what() << "\n";
+            Logger::getInstance().error("[Network Error] " + std::string(e.what()));
             return 0.0;
         }
     }
 
-    std::cerr << "[WARNING] Could not fetch live data from Pi (Status: "
-              << (res ? std::to_string(res->status) : "Unreachable") << ")\n";
+    std::string msg = "[WARNING] Could not fetch live data from Pi (Status: " +
+                      (res ? std::to_string(res->status) : "Unreachable") + ")";
+    Logger::getInstance().error(msg);
 
     return 0.0;
 }
@@ -1274,19 +1286,28 @@ double HomeyGUI::extractNestedValue(const std::string& json, const std::string& 
 
 double HomeyGUI::applySimulationOffset(double baseValue, const std::string& type) {
     if (type == "Fum") return baseValue;
+
     static std::random_device rd;
     static std::mt19937 gen(rd());
+
     std::uniform_real_distribution<double> dis(-1.0, 1.0);
     double randomFactor = dis(gen);
     double offset = 0.0;
+
     if (type == "Temperatura") offset = randomFactor * 3.0;
     else if (type == "Umiditate") offset = randomFactor * 10.0;
     else if (type == "Lumina") offset = randomFactor * 150.0;
     else if (type == "CO2") offset = randomFactor * 50.0;
     else offset = randomFactor * 1.0;
+
     double finalValue = std::round((baseValue + offset) * 10.0) / 10.0;
+
     if (finalValue < 0.0) return 0.0;
-    if (type == "Umiditate" && finalValue > 100.0) return 100.0;
-    return finalValue;
+
+    if (type == "Umiditate") {
+        return clampValue<double>(finalValue, 0.0, 100.0);
+    }
+
+    return clampValue<double>(finalValue, 0.0, 10000.0);
 }
 

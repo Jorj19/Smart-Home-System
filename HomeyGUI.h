@@ -8,6 +8,8 @@
 #include "Sensor.h"
 #include "Room.h"
 #include "AnalysisEngine.h"
+#include "Extensions.h"
+#include "Logger.h"
 
 
 namespace Theme {
@@ -95,4 +97,8 @@ private:
     std::vector<Button> setupButtons;
     std::vector<Button> menuButtons;
     std::vector<Button> sidebarButtons;
+
+    HistoryBuffer<float> scrollHistory{20};
+
+    HistoryBuffer<std::string> commandHistory{10};
 };

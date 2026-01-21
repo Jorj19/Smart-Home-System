@@ -82,6 +82,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         ext/lib/httplib.cc
         Extensions.cpp
         Extensions.h
+        Logger.cpp
+        Logger.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ext/include)

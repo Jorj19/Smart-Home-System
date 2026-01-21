@@ -6,6 +6,7 @@
 #include "Sensor.h"
 
 #include <algorithm>
+#include <cctype>
 
 
 std::shared_ptr<Sensor> sensorFactory::createSensor(int typeIndex, double value) {
@@ -50,5 +51,20 @@ std::shared_ptr<Sensor> sensorFactory::createSensorFromString(const std::string&
     }
 
     return nullptr;
+}
+
+std::string sensorFactory::getSensorName(int typeIndex) {
+    switch(typeIndex) {
+    case 1: return "Temperatura";
+    case 2: return "Umiditate";
+    case 3: return "Lumina";
+    case 4: return "CO2";
+    case 5: return "PM2.5";
+    case 6: return "Fum";
+    case 7: return "TVOC";
+    case 8: return "CO";
+    case 9: return "Sunet";
+    default: return "Unknown";
+    }
 }
 
