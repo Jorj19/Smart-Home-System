@@ -9,10 +9,8 @@
 #include <vector>
 #include <string>
 #include "Sensor.h"
-class Extensions {
-};
 
-
+// cppcheck-suppress unusedFunction
 template <typename T>
 T clampValue(T value, T min, T max) {
     if (value < min) return min;
@@ -31,6 +29,7 @@ private:
 public:
     explicit HistoryBuffer(size_t size = 10) : maxSize(size) {}
 
+    // cppcheck-suppress unusedFunction
     void add(T item) {
         if (buffer.size() >= maxSize) {
             buffer.erase(buffer.begin());
@@ -38,8 +37,10 @@ public:
         buffer.push_back(item);
     }
 
+    // cppcheck-suppress unusedFunction
     void clear() { buffer.clear(); }
 
+    // cppcheck-suppress unusedFunction
     const std::vector<T>& getData() const { return buffer; }
 };
 

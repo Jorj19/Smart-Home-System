@@ -27,7 +27,6 @@ std::shared_ptr<Sensor> sensorFactory::createSensor(int typeIndex, double value)
 
 
 std::shared_ptr<Sensor> sensorFactory::createSensorFromString(const std::string& rawType, double value) {
-    // Facem o copie si o convertim la litere mici pentru a fi siguri (case-insensitive)
     std::string type = rawType;
     std::ranges::transform(type.begin(), type.end(), type.begin(),
                    [](unsigned char c){ return std::tolower(c); });
@@ -45,7 +44,6 @@ std::shared_ptr<Sensor> sensorFactory::createSensorFromString(const std::string&
     else if (type == "co") id = 8;
     else if (type == "sunet" || type == "sound") id = 9;
 
-    // Daca am gasit un ID valid, apelam factory-ul principal
     if (id != 0) {
         return createSensor(id, value);
     }
