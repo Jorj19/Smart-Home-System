@@ -51,6 +51,7 @@ std::shared_ptr<Sensor> sensorFactory::createSensorFromString(const std::string&
     return nullptr;
 }
 
+// cppcheck-suppress unusedFunction
 std::string sensorFactory::getSensorName(int typeIndex) {
     switch(typeIndex) {
     case 1: return "Temperatura";
