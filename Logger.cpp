@@ -11,9 +11,11 @@ Logger& Logger::getInstance() {
 }
 
 void Logger::log(const std::string& message) {
+    std::lock_guard<std::mutex> lock(mtx);
     std::cout << "[LOG] " << message << std::endl;
 }
 
 void Logger::error(const std::string& message) {
+    std::lock_guard<std::mutex> lock(mtx);
     std::cerr << "[ERROR] " << message << std::endl;
 }

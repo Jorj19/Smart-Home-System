@@ -9,7 +9,6 @@
 #include "Room.h"
 #include "AnalysisEngine.h"
 #include "Extensions.h"
-#include "Logger.h"
 
 
 namespace Theme {

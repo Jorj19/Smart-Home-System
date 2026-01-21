@@ -5,16 +5,18 @@
 #define LOGGER_H
 
 #include <string>
+#include <mutex>
 
 class Logger {
 private:
-    Logger() {} // Constructor privat
+    Logger() = default;
+    std::mutex mtx;
 
 public:
     Logger(const Logger&) = delete;
     Logger& operator=(const Logger&) = delete;
 
-    static Logger& getInstance(); // Metoda singleton
+    static Logger& getInstance();
 
     void log(const std::string& message);
     void error(const std::string& message);

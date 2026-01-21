@@ -50,7 +50,7 @@ HomeSystem ConfigManager::loadSystemFromFile(const std::string& filename) {
 
             } else if (type == "SENSOR" && parts.size() == 5) {
                 if (Room* room = loadedSystem.findRoomByName(parts[1])) {
-                    std::string sensorTypeStr = parts[2];
+                    const std::string& sensorTypeStr = parts[2];
                     double sensorValue = std::stod(parts[3]);
 
                     if (auto newSensor = sensorFactory::createSensorFromString(sensorTypeStr, sensorValue)) {

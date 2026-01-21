@@ -354,7 +354,9 @@ void HomeyGUI::drawOverview() {
             statusColor = sf::Color(52, 152, 219);
         }
 
-        bool cardClicked = drawRoomCard(gridX + col * (cardW + gap), gridY, rooms[i].getName(), static_cast<int>(sensorsInRoom.size()),roomStatus, statusColor);
+        float currentX = gridX + static_cast<float>(col) * (cardW + gap);
+
+        bool cardClicked = drawRoomCard(currentX, gridY, rooms[i].getName(), static_cast<int>(sensorsInRoom.size()), roomStatus, statusColor);
 
         if (cardClicked && click && !clickHandled) {
             selectedRoomIndex = static_cast<int>(i);
@@ -363,7 +365,7 @@ void HomeyGUI::drawOverview() {
         }
 
         col++;
-        if (gridX + (col + 1) * (cardW + gap) > 1280.f) {
+        if (gridX + static_cast<float>(col + 1) * (cardW + gap) > 1280.f) {
             float cardH = 140.f;
             col = 0;
             gridY += cardH + gap;
@@ -394,13 +396,16 @@ void HomeyGUI::drawRoomDetail(const Room* room) {
         float cardH = 140.f;
 
         int columns = 3;
-        int row = i / columns;
-        int col = i % columns;
 
-        float gx = startX + col * (cardW + gap);
-        float gy = startY + row * (cardH + gap);
+        int idx = static_cast<int>(i);
 
-        if (gy + cardH < window.getSize().y) {
+        int row = idx / columns;
+        int col = idx % columns;
+
+        float gx = startX + static_cast<float>(col) * (cardW + gap);
+        float gy = startY + static_cast<float>(row) * (cardH + gap);
+
+        if (gy + cardH < static_cast<float>(window.getSize().y)) {
             drawSensorCard(gx, gy, sensors[i]);
         }
     }
