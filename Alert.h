@@ -11,14 +11,13 @@ private:
     std::string message;
     std::string roomName;
     int priority; // 1 = critic, 2 = avertisment, 3 = info
-
     const int alertID;
     static int nextID;
 
 public:
-    Alert(const std::string& msg, const std::string& room, int prio);
+    Alert(std::string& msg, std::string& room, int prio);
 
-    ~Alert();
+    ~Alert() = default;
 
     Alert(const Alert& other);
 
@@ -27,6 +26,8 @@ public:
     [[nodiscard]] int getPriority() const;
     [[nodiscard]] std::string getMessage() const;
     [[nodiscard]] int getID() const;
+    [[nodiscard]] std::string getRoomName() const;
+
 
     friend std::ostream& operator<<(std::ostream& os, const Alert& a);
 };

@@ -13,14 +13,16 @@ Sistemul monitorizează parametri precum temperatura, umiditatea, calitatea aeru
 - Monitorizarea intensității luminii
 - Generarea alertelor pentru situații critice
 - Optimizarea consumului energetic
-- Detectarea situațiilor de risc (ex: geam deschis cu AC pornit, umiditate ridicată)
+- Detectarea situațiilor de risc (ex: temperatură scazută, umiditate ridicată)
 
-## Moduri de operare
+## Moduri de operare (to-do)
 - **Mod Petrecere**: creșterea intensității luminii, reducerea temperaturii și dezactivarea temporară a alertelor de zgomot
-- **Mod Plecat**: reducerea climatizării și activarea sistemului de securitate
+- **Mod Plecat**: reducerea climatizării și activarea sistemului de securitate (verifică usile si ferestrele)
 
 ## Dependențe
-Proiectul utilizează biblioteca **httplib** ca submodul Git.
+Proiectul include biblioteca `httplib` direct în repository. 
+
+Serverul fake/real pentru Smart Home System este inclus ca submodul Git.
 
 Inițializarea submodulelor:
 ```bash

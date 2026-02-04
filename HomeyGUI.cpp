@@ -693,7 +693,10 @@ void HomeyGUI::drawAnalytics() {
     if (!alerts.empty()) {
         fullReportStr += "\n\n[CRITICAL ALERTS LOG]\n";
         for (const auto& a : alerts) {
-             fullReportStr += ">>> [ALERT] Prio:" + std::to_string(a.getPriority()) + " | " + a.getMessage() + "\n";
+            fullReportStr += ">>> [ALERT] [" + a.getRoomName() + "] Prio:" +
+                std::to_string(a.getPriority()) + " | " +
+                a.getMessage() + "\n";
+
         }
     }
 
