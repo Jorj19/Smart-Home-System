@@ -15,7 +15,7 @@ private:
     static int nextID;
 
 public:
-    Alert(std::string& msg, std::string& room, int prio);
+    Alert(const std::string& msg, const std::string& room, int prio);
 
     ~Alert() = default;
 

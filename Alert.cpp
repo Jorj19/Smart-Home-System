@@ -3,9 +3,10 @@
 
 int Alert::nextID = 1;
 
-Alert::Alert( std::string& msg, std::string& room, int prio) : message(std::move(msg)), roomName(std::move(room)), priority(prio), alertID(nextID) {
+Alert::Alert(const std::string& msg, const std::string& room, int prio) : message(msg), roomName(room), priority(prio), alertID(nextID) {
     nextID++;
 }
+
 
 Alert::Alert(const Alert& other) : message(other.message), roomName(other.roomName), priority(other.priority), alertID(nextID) {
     nextID++;
