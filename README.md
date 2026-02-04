@@ -15,6 +15,8 @@ Sistemul monitorizează parametri precum temperatura, umiditatea, calitatea aeru
 - Optimizarea consumului energetic
 - Detectarea situațiilor de risc (ex: temperatură scazută, umiditate ridicată)
 
+## Următoarea secțiune nu a fost incă implementată
+
 ## Moduri de operare (to-do)
 - **Mod Petrecere**: creșterea intensității luminii, reducerea temperaturii și dezactivarea temporară a alertelor de zgomot
 - **Mod Plecat**: reducerea climatizării și activarea sistemului de securitate (verifică usile si ferestrele)

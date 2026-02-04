@@ -26,7 +26,7 @@ public:
     [[nodiscard]] int getPriority() const;
     [[nodiscard]] std::string getMessage() const;
     [[nodiscard]] int getID() const;
-    [[nodiscard]] std::string getRoomName() const;
+    [[nodiscard]] const std::string& getRoomName() const;
 
 
     friend std::ostream& operator<<(std::ostream& os, const Alert& a);

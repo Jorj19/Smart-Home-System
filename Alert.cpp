@@ -39,7 +39,7 @@ int Alert::getID() const {
 }
 
 // cppcheck-suppress unusedFunction
-std::string Alert::getRoomName() const {
+const std::string& Alert::getRoomName() const {
     return roomName;
 }
 
